@@ -32,7 +32,7 @@ def generateTimestamp():
   return hex(int(time.time() * 1000)).lstrip('0x')
 
 def generateBattleTime():
-  return str(random.uniform(3,10))[0:4]
+  return str(random.uniform(2,5))[0:4]
 
 def apiRequest(path, in_queryString = None, in_param = None):
   curlCommand = 'curl --compressed '
@@ -103,9 +103,9 @@ def printBattleResult(in_battleResult):
   #print in_battleResult
   if in_battleResult['res'] == 0:
     if in_battleResult.has_key('earns'):
-      print 'EXP: %s / GOLD: %s + %s' % (in_battleResult['earns']['exp'], in_battleResult['earns']['gold'], in_battleResult['earns']['bonus_gold'])
+      print 'EXP: %s / GOLD: %s (bonus %s)' % (in_battleResult['earns']['exp'], in_battleResult['earns']['gold'], in_battleResult['earns']['bonus_gold'])
       for item in in_battleResult['earns']['treasure']:
-        print 'Treasure: %s - %s' % (item['type'], item['id'])
+        print 'Treasure: %s - %s x %s' % (item['type'], item['id'], item['val'])
     if in_battleResult.has_key('quest_reward'):
       print 'QUEST REWARD!!!'
       print in_battleResult['quest_reward']
@@ -130,5 +130,5 @@ def bot_mode():
     while currentSleepTime < sleepTime:
       status()
       print 'sleep: %s/%s' % (currentSleepTime, sleepTime)
-      time.sleep(60)
+      time.sleep(30)
       currentSleepTime += 1
