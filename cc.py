@@ -102,7 +102,7 @@ def battle(typeId, questId):
     if response['res'] == 0:
       print 'battle win - %s' % questId
       if response.has_key('earns'):
-        print 'EXP: %s / CARD EXP: %s' % (response['earns']['exp'], response['earns']['chara_exp'])
+        print 'EXP: %s / GOLD: %s + %s' % (response['earns']['exp'], response['earns']['gold'], response['earns']['bonus_gold'])
       if response.has_key('quest_reward'):
         print 'QUEST REWARD!!!'
         print response['quest_reward']
