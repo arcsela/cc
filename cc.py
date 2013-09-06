@@ -98,20 +98,27 @@ def battleWin(questId):
   queryString.update({'d': '1'})
   queryString.update({'s': '1'})
   return apiRequest('/quest/result', queryString)
+
+def printBattleResult(in_battleResult):
+  #print in_battleResult
+  if in_battleResult['res'] == 0:
+    if in_battleResult.has_key('earns'):
+      print 'EXP: %s / GOLD: %s + %s' % (in_battleResult['earns']['exp'], in_battleResult['earns']['gold'], in_battleResult['earns']['bonus_gold'])
+      for item in in_battleResult['earns']['treasure']:
+        print 'Treasure: %s - %s' % (item['type'], item['id'])
+    if in_battleResult.has_key('quest_reward'):
+      print 'QUEST REWARD!!!'
+      print in_battleResult['quest_reward']
+  return in_battleResult
   
 def battle(typeId, questId):
   response = battleInit(typeId, questId)
   if response['res'] == 0:
     print 'battle inital completed'
     time.sleep(60)
+    print 'battle win - %s' % questId
     response = battleWin(questId)
-    if response['res'] == 0:
-      print 'battle win - %s' % questId
-      if response.has_key('earns'):
-        print 'EXP: %s / GOLD: %s + %s' % (response['earns']['exp'], response['earns']['gold'], response['earns']['bonus_gold'])
-      if response.has_key('quest_reward'):
-        print 'QUEST REWARD!!!'
-        print response['quest_reward']
+    printBattleResult(response)
       
 def bot_mode():
   sleepTime = loadBotSleepTime()
