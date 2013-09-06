@@ -75,6 +75,7 @@ def status(playerStatus = None):
     playerStatus = getPlayerStatus()
   print 'exp: %s/%s' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'])
   print 'stamina: %s/%s' % (playerStatus['body'][4]['data']['staminaMax'] - (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 / 8, playerStatus['body'][4]['data']['staminaMax'])
+  return playerStatus
 
 def login():
   config.set('session', 'sessionId', 'INVALID')
@@ -128,7 +129,9 @@ def bot_mode():
     questId = loadBattleId()
     battle(typeId, questId)
     while currentSleepTime < sleepTime:
-      status()
+      playerStatus = status()
+      if playerStatus['body'][4]['data']['stmRefillTime'] < int(time.time()):
+        break
       print 'sleep: %s/%s' % (currentSleepTime, sleepTime)
       time.sleep(30)
       currentSleepTime += 1
