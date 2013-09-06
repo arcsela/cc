@@ -70,6 +70,12 @@ def apiRequest(path, in_queryString = None, in_param = None):
 def getPlayerStatus():
   return apiRequest('/user/all_data')
 
+def status(playerStatus = None):
+  if playerStatus is None:
+    playerStatus = getPlayerStatus()
+  print 'exp: %s/%s' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'])
+  print 'stamina: %s/%s' % (playerStatus['body'][4]['data']['staminaMax'] - (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 / 8, playerStatus['body'][4]['data']['staminaMax'])
+
 def login():
   config.set('session', 'sessionId', 'INVALID')
   fp = open(configFile, 'wb')
@@ -115,9 +121,7 @@ def bot_mode():
     questId = loadBattleId()
     battle(typeId, questId)
     while currentSleepTime < sleepTime:
-      playerStatus = getPlayerStatus()
-      print 'exp: %s/%s' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'])
-      print 'stamina: %s/%s' % (playerStatus['body'][4]['data']['staminaMax'] - (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 / 8, playerStatus['body'][4]['data']['staminaMax'])
+      status()
       print 'sleep: %s/%s' % (currentSleepTime, sleepTime)
       time.sleep(60)
       currentSleepTime += 1
