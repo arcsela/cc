@@ -186,7 +186,7 @@ def bot_mode():
       if playerStatus['body'][4]['data']['stmRefillTime'] < int(time.time()):
         break
       print 'sleep: %s/%s' % (currentSleepTime, sleepTime)
-      time.sleep(30)
+      time.sleep(60)
       currentSleepTime += 1
 
 def main():
