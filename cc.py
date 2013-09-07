@@ -98,6 +98,15 @@ def parseMissionStatus(questid, playerStatus = None):
       return quest
   return None
 
+def printMissionList(typeid = None):
+  playerStatus = getPlayerStatus()
+  for quest in playerStatus['body'][3]['data']:
+    if not typeid or quest['type'] == int(typeid):
+      if quest.has_key('treasure_idx'):
+        print '%s - %s/4' % (quest['id'], len(quest['treasure_idx']))
+      else:
+        print '%s - 0/4' % (quest['id'])
+
 def printMissionStatus(questid):
   missionStatus = parseMissionStatus(questid)
   if missionStatus is None:
@@ -200,6 +209,11 @@ def main():
     setSession(newSession)
   elif sys.argv[1] == 'bot':
     bot_mode()
+  elif sys.argv[1] == 'questList':
+    if len(sys.argv) == 3:
+      printMissionList(sys.argv[2])
+    else:
+      printMissionList()
   elif sys.argv[1] == 'quest':
     questId = sys.argv[2]
     quest(questId)
