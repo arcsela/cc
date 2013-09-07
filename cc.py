@@ -16,6 +16,11 @@ _server_host = 'http://api.chain-chronicle.net'
 def loadSession():
   return config.get('session', 'sessionId')
 
+def setSession(in_sessionId):
+  config.set('session', 'sessionId', in_sessionId)
+  fp = open(configFile, 'wb')
+  config.write(fp)
+
 def loadFriend():
   return config.get('player', 'friendId')
 
@@ -187,6 +192,9 @@ def bot_mode():
 def main():
   if sys.argv[1] == 'login':
     pass
+  elif sys.argv[1] == 'session':
+    newSession = sys.argv[2]
+    setSession(newSession)
   elif sys.argv[1] == 'bot':
     bot_mode()
   elif sys.argv[1] == 'quest':
