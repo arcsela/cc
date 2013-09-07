@@ -19,20 +19,23 @@ def loadSession():
 def loadFriend():
   return config.get('player', 'friendId')
 
-def loadBattleId():
-  return config.get('bot', 'questId')
-  
-def loadBattleType():
-  return config.get('bot', 'typeId')
+def loadQuestIdList():
+  return json.loads(config.get('bot', 'questIdList'))
 
-def loadBotSleepTime():
-  return int(config.get('bot', 'apcost')) * 8
+def loadSleepTime():
+  return int(config.get('bot', 'sleeptime'))
 
 def generateTimestamp():
   return hex(int(time.time() * 1000)).lstrip('0x')
 
 def generateBattleTime():
   return str(random.uniform(2,5))[0:4]
+
+def checkQuestClear(questInfo):
+  if questInfo.has_key('treasure_idx'):
+    if len(questInfo['treasure_idx']) == 4:
+      return True
+  return False
 
 def apiRequest(path, in_queryString = None, in_param = None):
   curlCommand = 'curl --compressed '
@@ -56,10 +59,10 @@ def apiRequest(path, in_queryString = None, in_param = None):
   queryString += 'cnt=' + generateTimestamp()
   if in_queryString:
     for key in in_queryString:
-      queryString += '&' + key + '=' + in_queryString[key]
+      queryString += '&' + key + '=' + str(in_queryString[key])
     
   response = None
-  commandString = '%s "%s%s%s"' % (curlCommand, _server_host, path, queryString)
+  commandString = '%s "%s%s%s" 2>/dev/null' % (curlCommand, _server_host, path, queryString)
   response = json.loads(os.popen(commandString).read())
   if response['res'] != 0:
     print 'API error'
@@ -70,11 +73,38 @@ def apiRequest(path, in_queryString = None, in_param = None):
 def getPlayerStatus():
   return apiRequest('/user/all_data')
 
-def status(playerStatus = None):
+def printPlayerStatus(playerStatus = None):
   if playerStatus is None:
     playerStatus = getPlayerStatus()
   print 'exp: %s/%s' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'])
   print 'stamina: %s/%s' % (playerStatus['body'][4]['data']['staminaMax'] - (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 / 8, playerStatus['body'][4]['data']['staminaMax'])
+
+def printPlayerInfo(playerStatus = None):
+  if playerStatus is None:
+    playerStatus = getPlayerStatus()
+  print 'account id: %s' % (playerStatus['body'][4]['data']['open_id'])
+  print 'fid: %s' % (playerStatus['body'][4]['data']['uid'])
+
+def parseMissionStatus(questid, playerStatus = None):
+  if playerStatus is None:
+    playerStatus = getPlayerStatus()
+  for quest in playerStatus['body'][3]['data']:
+    if quest['id'] == int(questid):
+      return quest
+  return None
+
+def printMissionStatus(questid):
+  missionStatus = parseMissionStatus(questid)
+  if missionStatus is None:
+    print 'quest not found: %s' % (questid)
+    return None
+  print 'quest id: %s' % (missionStatus['id'])
+  print 'type  id: %s' % (missionStatus['type'])
+  if missionStatus.has_key('treasure_idx'):
+    treasureCount = len(missionStatus['treasure_idx'])
+  else:
+    treasureCount = 0
+  print 'treasure: %s/%s' % (treasureCount, '4')
 
 def login():
   config.set('session', 'sessionId', 'INVALID')
@@ -90,7 +120,7 @@ def battleInit(typeId, questId):
   queryString.update({'fid' : loadFriend()})
   return apiRequest('/quest/entry', queryString)
   
-def battleWin(questId):
+def questWin(questId):
   queryString = {}
   queryString.update({'qid' : questId})
   queryString.update({'res' : '1'})
@@ -107,31 +137,72 @@ def printBattleResult(in_battleResult):
       for item in in_battleResult['earns']['treasure']:
         print 'Treasure: %s - %s x %s' % (item['type'], item['id'], item['val'])
     if in_battleResult.has_key('quest_reward'):
-      print 'QUEST REWARD!!!'
+      print 'QUEST COMPLETED REWARD!!!'
       print in_battleResult['quest_reward']
   return in_battleResult
-  
-def battle(typeId, questId):
-  response = battleInit(typeId, questId)
-  if response['res'] == 0:
+
+def __battleQuest__(questInfo):
+  questType = questInfo['type']
+  questId   = questInfo['id']
+  resBattleInit = battleInit(questType, questId)
+  if resBattleInit['res'] == 0:
     print 'battle inital completed'
-    time.sleep(60)
-    print 'battle win - %s' % questId
-    response = battleWin(questId)
-    printBattleResult(response)
+    time.sleep(30)
+    print 'battle end - %s' % (questId)
+    resBattleResult = questWin(questId)
+    printBattleResult(resBattleResult)
+    return True
+  return False
+
+def quest(questIdList):
+  # convert battleId into array
+  if type(questIdList) is str:
+    questIdList = [questIdList]
+  questIdList.reverse()
+  statusInfo = getPlayerStatus()
+  
+  while len(questIdList) > 0:
+    questId = questIdList.pop()
+    questInfo  = parseMissionStatus(questId, statusInfo)
+    if not checkQuestClear(questInfo):
+      return __battleQuest__(questInfo)
+  # battle with last entry if no match
+  return __battleQuest__(questInfo)
       
 def bot_mode():
-  sleepTime = loadBotSleepTime()
+  sleepTime = loadSleepTime()
+  questIdList = loadQuestIdList()
   while True:
     currentSleepTime = 0
-    typeId = loadBattleType()
-    questId = loadBattleId()
-    battle(typeId, questId)
+    quest(questIdList)
     while currentSleepTime < sleepTime:
       playerStatus = getPlayerStatus()
-      status(playerStatus)
+      printPlayerStatus(playerStatus)
       if playerStatus['body'][4]['data']['stmRefillTime'] < int(time.time()):
         break
       print 'sleep: %s/%s' % (currentSleepTime, sleepTime)
       time.sleep(30)
       currentSleepTime += 1
+
+def main():
+  if sys.argv[1] == 'login':
+    pass
+  elif sys.argv[1] == 'bot':
+    bot_mode()
+  elif sys.argv[1] == 'quest':
+    questId = sys.argv[2]
+    quest(questId)
+  elif sys.argv[1] == 'questWin':
+    questId = sys.argv[2]
+    questWin(questID)
+  elif sys.argv[1] == 'questInfo':
+    questId = sys.argv[2]
+    printMissionStatus(questId)
+  elif sys.argv[1] == 'playerInfo':
+    printPlayerInfo()
+    printPlayerStatus()
+  else:
+    print 'command error - %s' % sys.argv[1]
+
+if __name__ == "__main__":
+  main()
