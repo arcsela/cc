@@ -156,8 +156,8 @@ def __battleQuest__(questInfo):
     print 'battle end - %s' % (questId)
     resBattleResult = questWin(questId)
     printBattleResult(resBattleResult)
-    return True
-  return False
+    return questId
+  return None
 
 def quest(questIdList):
   # convert battleId into array
@@ -171,21 +171,23 @@ def quest(questIdList):
     questInfo  = parseMissionStatus(questId, statusInfo)
     if not checkQuestClear(questInfo):
       return __battleQuest__(questInfo)
+    else:
+      print '%s - cleared' % (questId)
   # battle with last entry if no match
   return __battleQuest__(questInfo)
       
 def bot_mode():
   sleepTime = loadSleepTime()
-  questIdList = loadQuestIdList()
   while True:
     currentSleepTime = 0
+    questIdList = loadQuestIdList()
     quest(questIdList)
     while currentSleepTime < sleepTime:
       playerStatus = getPlayerStatus()
       printPlayerStatus(playerStatus)
       if playerStatus['body'][4]['data']['stmRefillTime'] < int(time.time()):
         break
-      print 'sleep: %s/%s' % (currentSleepTime, sleepTime)
+      print 'sleep: %s/%s\n' % (currentSleepTime, sleepTime)
       time.sleep(60)
       currentSleepTime += 1
 
