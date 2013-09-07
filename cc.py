@@ -205,7 +205,8 @@ def main():
     quest(questId)
   elif sys.argv[1] == 'questWin':
     questId = sys.argv[2]
-    questWin(questId)
+    resBattleResult = questWin(questId)
+    printBattleResult(resBattleResult)
   elif sys.argv[1] == 'questInfo':
     questId = sys.argv[2]
     printMissionStatus(questId)
