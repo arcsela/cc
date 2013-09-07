@@ -202,13 +202,20 @@ def main():
     quest(questId)
   elif sys.argv[1] == 'questWin':
     questId = sys.argv[2]
-    questWin(questID)
+    questWin(questId)
   elif sys.argv[1] == 'questInfo':
     questId = sys.argv[2]
     printMissionStatus(questId)
   elif sys.argv[1] == 'playerInfo':
     printPlayerInfo()
     printPlayerStatus()
+  elif sys.argv[1] == 'genPass':
+    password = sys.argv[2]
+    resAccount = apiRequest('/user/get_account')
+    queryString = {}
+    queryString.update({'pass' : password})
+    apiRequest('/user/set_password', queryString)
+    print 'account: %s' % (resAccount['account'])
   else:
     print 'command error - %s' % sys.argv[1]
 
