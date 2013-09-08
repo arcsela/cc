@@ -13,6 +13,28 @@ config.read(configFile)
 
 _server_host = 'http://api.chain-chronicle.net'
 
+def login(in_account, in_password):
+  setSession('INVALID')
+  # takeover account data
+  param = 'uuid=ando74c139c3-e340-4c01-8ed2-afe91c7db197&account=' + in_account + '&pass=' + in_password
+  apiRequest('/user/takeover', None, param)
+  # generate session id
+  login_path  = 'http://api.chain-chronicle.net/session/login?cnt=140fe298a8e'
+  login_param = 'param=%7b%22App%22%3a%7b%22Ver%22%3a%220.11%22%2c%22Rev%22%3a%225662%22%7d%2c%22Device%22%3a%7b%22DeviceModel%22%3a%22asus+ME371MG%22%2c%22Processor%22%3a%22ARMv7+VFPv3%22%2c%22Graphics%22%3a%22PowerVR+SGX+540%22%2c%22OSVer%22%3a%22Android+OS+4.1.2+%2f+API-16+(JZO54K%2fTW_epad-V3.2.4-20130712)%22%2c%22UUID%22%3a%22ando74c139c3-e340-4c01-8ed2-afe91c7db197%22%2c%22RAM%22%3a967%2c%22VRAM%22%3a60%2c%22OS%22%3a%222%22%2c%22Token%22%3a%22%22%7d%7d&nature=tfsTbCiLB9O7X43t0Me%2bXzbw8og%3d'
+  apiLogin(login_path, login_param)
+  login_path  = 'http://api.chain-chronicle.net/session/login?cnt=140fe2bfbd0'
+  login_param = 'param=%7b%22App%22%3a%7b%22Ver%22%3a%220.11%22%2c%22Rev%22%3a%225662%22%7d%2c%22Device%22%3a%7b%22DeviceModel%22%3a%22asus+ME371MG%22%2c%22Processor%22%3a%22ARMv7+VFPv3%22%2c%22Graphics%22%3a%22PowerVR+SGX+540%22%2c%22OSVer%22%3a%22Android+OS+4.1.2+%2f+API-16+(JZO54K%2fTW_epad-V3.2.4-20130712)%22%2c%22UUID%22%3a%22ando74c139c3-e340-4c01-8ed2-afe91c7db197%22%2c%22RAM%22%3a967%2c%22VRAM%22%3a60%2c%22OS%22%3a%222%22%2c%22Token%22%3a%22%22%7d%7d&nature=uksU%2bngwYzywumNK0LDjTSXd6fQ%3d'
+  apiLogin(login_path, login_param)
+  # genPass
+  setAccountPassword(in_password)
+
+def setAccountPassword(password):
+  resAccount = apiRequest('/user/get_account')
+  queryString = {}
+  queryString.update({'pass' : password})
+  apiRequest('/user/set_password', queryString)
+  return resAccount['account']
+
 def loadSession():
   return config.get('session', 'sessionId')
 
@@ -75,6 +97,23 @@ def apiRequest(path, in_queryString = None, in_param = None):
     print response
   return response
 
+def apiLogin(path, param):
+  curlCommand = 'curl --compressed '
+  curlCommand += '-H "Host: api.chain-chronicle.net" '
+  curlCommand += '-H "User-Agent: Chronicle/1.0.2 Rev/5662 (iPhone OS 6.0.2)" '
+  curlCommand += '-H "Accept-Language: zh-tw" '
+  curlCommand += '-H "Device: 6" '
+  curlCommand += '-H "Accept: */*" '
+  curlCommand += '-H "Platform: 1" '
+  curlCommand += '-H "Content-Type: application/x-www-form-urlencoded" '
+  curlCommand += '-H "Cookie: sid=INVALID" '
+  curlCommand += '-H "AppVersion: 0.11" '
+  curlCommand += '-d "' + param + '" '
+  response = None
+  commandString = '%s "%s" 2>/dev/null' % (curlCommand, path)
+  response = json.loads(os.popen(commandString).read())
+  setSession(response['login']['sid'])
+
 def getPlayerStatus():
   return apiRequest('/user/all_data')
 
@@ -119,13 +158,6 @@ def printMissionStatus(questid):
   else:
     treasureCount = 0
   print 'treasure: %s/%s' % (treasureCount, '4')
-
-def login():
-  config.set('session', 'sessionId', 'INVALID')
-  fp = open(configFile, 'wb')
-  config.write(fp)
-  config.read(configFile)
-  return apiRequest('/session/login', None, 'param=%7b%22App%22%3a%7b%22Ver%22%3a%220.11%22%2c%22Rev%22%3a%225662%22%7d%2c%22Device%22%3a%7b%22DeviceModel%22%3a%22iPhone5%2c2%22%2c%22Processor%22%3a%22armv7s%22%2c%22Graphics%22%3a%22PowerVR+SGX+543%22%2c%22OSVer%22%3a%22iPhone+OS+6.0.2%22%2c%22UUID%22%3a%22FEEE070C-304D-4E5D-9B65-9FA794A39ADB%22%2c%22RAM%22%3a1015%2c%22VRAM%22%3a256%2c%22OS%22%3a%221%22%2c%22Generation%22%3a%22iPhone5%22%2c%22Token%22%3a%227DA6BFE18BE8E5BD7136CF88761F75E3A95EE542F027A0F77C0882660020DF1B%22%7d%7d')
   
 def battleInit(typeId, questId):
   queryString = {}
@@ -177,9 +209,11 @@ def quest(questIdList):
   
   questInfo = None
   while len(questIdList) > 0:
-    questId = questIdList.pop()
+    questId = questIdList.pop()      
     questInfo  = parseMissionStatus(questId, statusInfo)
     if not checkQuestClear(questInfo):
+      return __battleQuest__(questInfo)
+    elif len(questIdList) == 0:
       return __battleQuest__(questInfo)
     else:
       print '%s - cleared' % (questId)
@@ -203,7 +237,7 @@ def bot_mode():
 
 def main():
   if sys.argv[1] == 'login':
-    pass
+    login(sys.argv[2], sys.argv[3])
   elif sys.argv[1] == 'session':
     newSession = sys.argv[2]
     setSession(newSession)
