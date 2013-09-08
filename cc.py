@@ -81,7 +81,7 @@ def getPlayerStatus():
 def printPlayerStatus(playerStatus = None):
   if playerStatus is None:
     playerStatus = getPlayerStatus()
-  print 'exp: %s/%s' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'])
+  print 'exp: %s/%s (Lv %s)' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'], playerStatus['body'][4]['data']['lv'])
   print 'stamina: %s/%s' % (playerStatus['body'][4]['data']['staminaMax'] - (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 / 8, playerStatus['body'][4]['data']['staminaMax'])
 
 def printPlayerInfo(playerStatus = None):
