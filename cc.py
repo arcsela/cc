@@ -211,14 +211,16 @@ def quest(questIdList):
   while len(questIdList) > 0:
     questId = questIdList.pop()      
     questInfo  = parseMissionStatus(questId, statusInfo)
+    if questInfo is None:
+      continue
     if not checkQuestClear(questInfo):
       return __battleQuest__(questInfo)
     elif len(questIdList) == 0:
       return __battleQuest__(questInfo)
     else:
       print '%s - cleared' % (questId)
-  # battle with last entry if no match
-  return __battleQuest__(questInfo)
+  print 'no matched quest'
+  return None
       
 def bot_mode():
   sleepTime = loadSleepTime()
