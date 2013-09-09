@@ -137,6 +137,11 @@ def parseMissionStatus(questid, playerStatus = None):
       return quest
   return None
 
+def parseMainQuestList(playerStatus = None):
+  if playerStatus is None:
+    playerStatus = getPlayerStatus()
+  return playerStatus['body'][1]['data']
+
 def printMissionList(typeid = None):
   playerStatus = getPlayerStatus()
   for quest in playerStatus['body'][3]['data']:
@@ -158,7 +163,7 @@ def printMissionStatus(questid):
   else:
     treasureCount = 0
   print 'treasure: %s/%s' % (treasureCount, '4')
-  
+    
 def battleInit(typeId, questId):
   queryString = {}
   queryString.update({'qid' : questId})
@@ -221,6 +226,19 @@ def quest(questIdList):
       print '%s - cleared' % (questId)
   print 'no matched quest'
   return None
+
+def questMain():
+  statusInfo = getPlayerStatus()
+  mainQuestList  = parseMainQuestList(statusInfo)
+  mainQuestList.reverse()
+  questInfo = mainQuestList[0]
+  battleResponse = __battleQuest__(questInfo)
+  if battleResponse is None:
+    questId = questInfo['id']
+    queryString = {}
+    queryString.update({'qid' : questId})
+    queryString.update({'type': '5'})
+    print apiRequest('/quest/treasure', queryString)
       
 def bot_mode():
   sleepTime = loadSleepTime()
@@ -253,6 +271,8 @@ def main():
   elif sys.argv[1] == 'quest':
     questId = sys.argv[2]
     quest(questId)
+  elif sys.argv[1] == 'questMain':
+    questMain()
   elif sys.argv[1] == 'questWin':
     questId = sys.argv[2]
     resBattleResult = questWin(questId)
