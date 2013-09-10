@@ -253,14 +253,14 @@ def printFriendApplyList():
 def friendAccept(uid):
   queryString = {}
   queryString.update({'fid': uid})
-  resFriend = apiRequest('/friend/accept')
+  resFriend = apiRequest('/friend/accept', queryString)
   friendInfo = resFriend['body'][0]['data']['list'][0]
   print "%s - [%2d] %s" % (friend['uid'], friend['lv'], friend['name'].encode("utf-8"))
   
 def friendRequest(uid):
   queryString = {}
   queryString.update({'fid' : uid})
-  apiRequest('/friend/offer')
+  apiRequest('/friend/offer', queryString)
       
 def bot_mode():
   sleepTime = loadSleepTime()
