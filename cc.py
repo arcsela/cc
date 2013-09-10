@@ -301,14 +301,26 @@ def main():
   elif sys.argv[1] == 'playerInfo':
     printPlayerInfo()
     printPlayerStatus()
-  elif sys.argv[1] == 'friendApplyList':
-    printFriendApplyList()
-  elif sys.argv[1] == 'friendAccept':
-    uid = sys.argv[2]
-    friendAccept(uid)
-  elif sys.argv[1] == 'friendRequest':
-    uid = sys.argv[2]
-    friendRequest(uid)
+    
+  elif sys.argv[1] == 'friend':
+    try:
+      subCommand = sys.argv[2]
+      if subCommand == 'request':
+        uid = sys.argv[3]
+        friendRequest(uid)
+      elif subCommand == 'accept':
+        uid = sys.argv[3]
+        friendAccept(uid)
+      elif subCommand == 'requestList':
+        printFriendApplyList()
+      else:
+        raise
+    except:
+      print('command for friend:')
+      print('  requestList   : list who is asking to be your friend')
+      print('  accept  <uid> : accept <uid> to be your friend')
+      print('  request <uid> : request <uid> for friend')
+      
   elif sys.argv[1] == 'genPass':
     password = sys.argv[2]
     resAccount = apiRequest('/user/get_account')
