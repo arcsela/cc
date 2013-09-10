@@ -241,12 +241,15 @@ def questMain():
     queryString.update({'type': questType})
     print apiRequest('/quest/treasure', queryString)
     
-def getFriendApplyList():
+def getFriendPendingList():
   resFriend = apiRequest('/friend/offered')
   return resFriend['body'][0]['data']['list']
 
-def printFriendApplyList():
-  friendList = getFriendApplyList()
+def getFriendList():
+  resFriend = apiRequest('/friend/list')
+  return resFriend['body'][0]['data']['list']
+
+def printFriendList(friendList):
   for friend in friendList:
     print "%s - [%2d] %s" % (friend['uid'], friend['lv'], friend['name'].encode("utf-8"))
     
@@ -315,15 +318,20 @@ def main():
       elif subCommand == 'accept':
         uid = sys.argv[3]
         friendAccept(uid)
-      elif subCommand == 'requestList':
-        printFriendApplyList()
+      elif subCommand == 'pending':
+        friendList = getFriendPendingList()
+        printFriendList(friendList)
+      elif subCommand == 'list':
+        friendList = getFriendList()
+        printFriendList(friendList)
       else:
         raise
     except:
       print('command for friend:')
-      print('  requestList   : list who is asking to be your friend')
-      print('  accept  <uid> : accept <uid> to be your friend')
+      print('  list          : list current friends')
       print('  request <uid> : request <uid> for friend')
+      print('  pending       : list who is asking to be your friend')
+      print('  accept  <uid> : accept <uid> to be your friend')
       
   elif sys.argv[1] == 'genPass':
     password = sys.argv[2]
