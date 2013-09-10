@@ -235,9 +235,10 @@ def questMain():
   battleResponse = __battleQuest__(questInfo)
   if battleResponse is None:
     questId = questInfo['id']
+    questType = questInfo['type']
     queryString = {}
     queryString.update({'qid' : questId})
-    queryString.update({'type': '5'})
+    queryString.update({'type': questType})
     print apiRequest('/quest/treasure', queryString)
       
 def bot_mode():
