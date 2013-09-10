@@ -240,6 +240,23 @@ def questMain():
     queryString.update({'qid' : questId})
     queryString.update({'type': questType})
     print apiRequest('/quest/treasure', queryString)
+    
+def getFriendApplyList():
+  resFriend = apiRequest('/friend/offered')
+  return resFriend['body'][0]['data']['list']
+
+def printFriendApplyList():
+  friendList = getFriendApplyList()
+  for friend in friendList:
+    print "%s - [%2d] %s" % (friend['uid'], friend['lv'], friend['name'].encode("utf-8"))
+    
+def friendAccept(uid):
+  resFriend = apiRequest('/friend/accept?fid=' + uid)
+  friendInfo = resFriend['body'][0]['data']['list'][0]
+  print "%s - [%2d] %s" % (friend['uid'], friend['lv'], friend['name'].encode("utf-8"))
+  
+def friendRequest(uid):
+  apiRequest('/friend/offer?fid=' + uid)
       
 def bot_mode():
   sleepTime = loadSleepTime()
@@ -284,6 +301,14 @@ def main():
   elif sys.argv[1] == 'playerInfo':
     printPlayerInfo()
     printPlayerStatus()
+  elif sys.argv[1] == 'friendApplyList':
+    printFriendApplyList()
+  elif sys.argv[1] == 'friendAccept':
+    uid = sys.argv[2]
+    friendAccept(uid)
+  elif sys.argv[1] == 'friendRequest':
+    uid = sys.argv[2]
+    friendRequest(uid)
   elif sys.argv[1] == 'genPass':
     password = sys.argv[2]
     resAccount = apiRequest('/user/get_account')
