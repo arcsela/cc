@@ -120,6 +120,13 @@ def getPlayerStatus():
 def printPlayerStatus(playerStatus = None):
   if playerStatus is None:
     playerStatus = getPlayerStatus()
+  for item in playerStatus['body'][7]:
+    if item['item_id'] == 10:
+      playerGold = item['cnt']
+    if item['item_id'] == 11:
+      playerFP = item['cnt']
+  playerStone = playerStatus['body'][10]['data']
+  print 'Gold: %s / FP: %s / Stone: %s' % (playerGold, playerFP, playerStone)
   print 'exp: %s/%s (Lv %s)' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'], playerStatus['body'][4]['data']['lv'])
   print 'stamina: %s/%s' % (playerStatus['body'][4]['data']['staminaMax'] - (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 / 8, playerStatus['body'][4]['data']['staminaMax'])
 
