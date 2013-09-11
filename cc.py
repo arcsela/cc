@@ -120,7 +120,7 @@ def getPlayerStatus():
 def printPlayerStatus(playerStatus = None):
   if playerStatus is None:
     playerStatus = getPlayerStatus()
-  for item in playerStatus['body'][7]:
+  for item in playerStatus['body'][7]['data']:
     if item['item_id'] == 10:
       playerGold = item['cnt']
     if item['item_id'] == 11:
