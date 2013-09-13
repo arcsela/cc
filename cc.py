@@ -302,7 +302,13 @@ def main():
       printMissionList()
   elif sys.argv[1] == 'quest':
     questId = sys.argv[2]
-    quest(questId)
+    questType = sys.argv[3]
+    #quest(questId)
+    resBattleInit = battleInit(questType, questId)
+    print 'battle init - %s'
+    sleep(30)
+    resBattleResult = questWin(questId)
+    print 'battle end - %s' % (questId)
   elif sys.argv[1] == 'questMain':
     questMain()
   elif sys.argv[1] == 'questWin':
