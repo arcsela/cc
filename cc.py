@@ -6,6 +6,8 @@ import os
 import time
 import random
 import json
+from StringIO import StringIO
+import gzip
 
 configFile = 'cc.conf'
 config = SafeConfigParser()
@@ -16,14 +18,14 @@ _server_host = 'http://api.chain-chronicle.net'
 def login(in_account, in_password):
   setSession('INVALID')
   # takeover account data
-  param = 'uuid=ando74c139c3-e340-4c01-8ed2-afe91c7db197&account=' + in_account + '&pass=' + in_password
+  param = 'uuid=ando31759302-db26-4d22-babc-877f8735d51e&account=' + in_account + '&pass=' + in_password + '&nature=vMI2f1o09owqH2Vcs49DlTHt9gc%3d'
   apiRequest('/user/takeover', None, param)
   # generate session id
-  login_path  = 'http://api.chain-chronicle.net/session/login?cnt=140fe298a8e'
-  login_param = 'param=%7b%22App%22%3a%7b%22Ver%22%3a%220.11%22%2c%22Rev%22%3a%225662%22%7d%2c%22Device%22%3a%7b%22DeviceModel%22%3a%22asus+ME371MG%22%2c%22Processor%22%3a%22ARMv7+VFPv3%22%2c%22Graphics%22%3a%22PowerVR+SGX+540%22%2c%22OSVer%22%3a%22Android+OS+4.1.2+%2f+API-16+(JZO54K%2fTW_epad-V3.2.4-20130712)%22%2c%22UUID%22%3a%22ando74c139c3-e340-4c01-8ed2-afe91c7db197%22%2c%22RAM%22%3a967%2c%22VRAM%22%3a60%2c%22OS%22%3a%222%22%2c%22Token%22%3a%22%22%7d%7d&nature=tfsTbCiLB9O7X43t0Me%2bXzbw8og%3d'
+  login_path  = 'http://api.chain-chronicle.net/session/login?cnt=14120ff77c7'
+  login_param = 'param=1FaQC07YMUGMAKXToXv4P5IiAeSejx5IsZw25%2bxr2XXXJ7tUSTIkCCE%2bWjzwcvCpSbVLGQTuA5ixCsI1tCHXgV5yLnYRRwVvUvYsBlNaSmXLqQyaQOCjVNJ8IMvWZ%2fZHE8eezNEal9R2ZFhQtO3vnEd%2bHGYucS2iztAVOWKSWIh5vZSIyBuidrhHquXO6N1LwxM9dKtSX%2fenCccPChoMN1Nu6LxCMaSvzDY7Y9lP%2fr%2bdMYQglRxi9ScdayKGJuSFpT%2bDzBzlKHlXJTtCDU%2ff51iXLrzWFwZJa9pMtX2SrndjDZMPzwOs6LXwJxame8A1W4UIechTtBspVCIkYlM%2bkG2uW%2b99lQE2sbqrucZlsEXWrCWZuYNkKCcwuPoIXinF9fyEfHcp5q4voow3zK20v6LKD%2b2H%2fHxt8AuEzHQKm%2fWI7P6Cy3kVoOht7meK6kA3esnUCgOvZ7exxtekz6Wggao7hMGH8kEtg1p38JkmYKgUB3Ov3RTernvhlgt0pMTyUSphtds29%2f%2faM3uGpU4wlYj4JJGAdQszmaNEUdzeZVbGDJbTz8UdvQDEHT9Uhq%2f5lA4WQXv6Q3ieUWEsKqwsuom3lriTBkgWB0D7FTFVdngqvO0j68JVnV9zHbKA5Y9lZAVka41M1pQ6mQlekOMjiw%3d%3d&nature=Cw6zwN1CxR45ToY2eromTpmcYn4%3d'
   apiLogin(login_path, login_param)
-  login_path  = 'http://api.chain-chronicle.net/session/login?cnt=140fe2bfbd0'
-  login_param = 'param=%7b%22App%22%3a%7b%22Ver%22%3a%220.11%22%2c%22Rev%22%3a%225662%22%7d%2c%22Device%22%3a%7b%22DeviceModel%22%3a%22asus+ME371MG%22%2c%22Processor%22%3a%22ARMv7+VFPv3%22%2c%22Graphics%22%3a%22PowerVR+SGX+540%22%2c%22OSVer%22%3a%22Android+OS+4.1.2+%2f+API-16+(JZO54K%2fTW_epad-V3.2.4-20130712)%22%2c%22UUID%22%3a%22ando74c139c3-e340-4c01-8ed2-afe91c7db197%22%2c%22RAM%22%3a967%2c%22VRAM%22%3a60%2c%22OS%22%3a%222%22%2c%22Token%22%3a%22%22%7d%7d&nature=uksU%2bngwYzywumNK0LDjTSXd6fQ%3d'
+  login_path  = 'http://api.chain-chronicle.net/session/login?cnt=1412109b8c5'
+  login_param = 'param=1FaQC07YMUGMAKXToXv4P5IiAeSejx5IsZw25%2bxr2XVtIRVCfc6wXhcLgwQD4ECFfvtVer2J3%2bEJY0mCmI74NXkGtimYJohXrIiCEEYOj7bsxyQb1R7DubsRbjmW9gxzWi9jvxZmWEOZB4zp7AKd9bliAdXOflpPl7YbrXuCIUetU1%2bpyoj9N2gFPoMa6b%2bPKwsfOQlI8dn7HHYJ3njcGv7B01%2fgoH%2bMRF7J7YP%2bYxkm9wXJZIJyfgOxkhG6Q9cHFC1Em2zfm7c%2fsB6cQ16D%2bt1vWWuKbd4IrDDIlyo41lSj2M2Nlyrb2og%2f05ES1MHjtJSBaruS92iherjq6kyhSwT3nI7yTe3mtb%2btOgDnCbkpyxa5CB%2fCbcrWxUeGeywQIsfJ3fTnlPGIcHegkIZoAihETXj%2bQe%2fwYbpsM85GU%2f%2f1CPfiwGODCey2gp6lsjwK&nature=gSkdzrOhTleJ3PCx7somVR8PoMQ%3d'
   apiLogin(login_path, login_param)
   # genPass
   setAccountPassword(in_password)
@@ -74,7 +76,7 @@ def apiRequest(path, in_queryString = None, in_param = None):
   curlCommand += '-H "Platform: 1" '
   curlCommand += '-H "Content-Type: application/x-www-form-urlencoded" '
   curlCommand += '-H "Cookie: sid=' + loadSession() + '" '
-  curlCommand += '-H "AppVersion: 0.11" '
+  curlCommand += '-H "AppVersion: 0.13" '
   
   param = ''
   if in_param:
@@ -90,12 +92,25 @@ def apiRequest(path, in_queryString = None, in_param = None):
     
   response = None
   commandString = '%s "%s%s%s" 2>/dev/null' % (curlCommand, _server_host, path, queryString)
-  response = json.loads(os.popen(commandString).read())
+  response = json.loads(respDecord(os.popen(commandString).read()))
   if response['res'] != 0:
     print 'API error'
     print commandString
     print response
   return response
+
+def respDecord(body):
+  dd = [[0x52,0xd1,0x00,0x00,0x00,0x00,0x00,0x00], [0x25,0x03,0x36,0x84,0x16,0x13,0x00,0xe4,0x34,0x86]]
+  num = min(0x40,len(body))
+  for j in range(0, num, 1):
+    if j < 8:
+      body = body[:j] + chr(ord(body[j])^int(dd[0][j])) + body[j+1:]
+    else:
+      k = (j-8)%10
+      body = body[:j] + chr(ord(body[j])^int(dd[1][k])) + body[j+1:]
+  f = gzip.GzipFile(fileobj=StringIO(body))
+  text = f.read()
+  return text
 
 def apiLogin(path, param):
   curlCommand = 'curl --compressed '
@@ -107,11 +122,12 @@ def apiLogin(path, param):
   curlCommand += '-H "Platform: 1" '
   curlCommand += '-H "Content-Type: application/x-www-form-urlencoded" '
   curlCommand += '-H "Cookie: sid=INVALID" '
-  curlCommand += '-H "AppVersion: 0.11" '
+  curlCommand += '-H "AppVersion: 0.13" '
   curlCommand += '-d "' + param + '" '
   response = None
   commandString = '%s "%s" 2>/dev/null' % (curlCommand, path)
-  response = json.loads(os.popen(commandString).read())
+  response = json.loads(respDecord(os.popen(commandString).read()))
+  print response
   setSession(response['login']['sid'])
 
 def getPlayerStatus():
@@ -289,7 +305,8 @@ def bot_mode():
 
 def main():
   if sys.argv[1] == 'login':
-    login(sys.argv[2], sys.argv[3])
+    #login(sys.argv[2], sys.argv[3])
+    print('command close')
   elif sys.argv[1] == 'session':
     newSession = sys.argv[2]
     setSession(newSession)
@@ -302,13 +319,7 @@ def main():
       printMissionList()
   elif sys.argv[1] == 'quest':
     questId = sys.argv[2]
-    questType = sys.argv[3]
-    #quest(questId)
-    resBattleInit = battleInit(questType, questId)
-    print 'battle init - %s'
-    sleep(30)
-    resBattleResult = questWin(questId)
-    print 'battle end - %s' % (questId)
+    quest(questId)
   elif sys.argv[1] == 'questMain':
     questMain()
   elif sys.argv[1] == 'questWin':
