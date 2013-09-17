@@ -18,17 +18,17 @@ _server_host = 'http://api.chain-chronicle.net'
 def login(in_account, in_password):
   setSession('INVALID')
   # takeover account data
-  param = 'uuid=ando31759302-db26-4d22-babc-877f8735d51e&account=' + in_account + '&pass=' + in_password + '&nature=vMI2f1o09owqH2Vcs49DlTHt9gc%3d'
+  param = 'uuid=ando934daece-edc1-4435-9560-3313cbfe1c2f&account=' + in_account + '&pass=' + in_password
   apiRequest('/user/takeover', None, param)
   # generate session id
-  login_path  = 'http://api.chain-chronicle.net/session/login?cnt=14120ff77c7'
-  login_param = 'param=1FaQC07YMUGMAKXToXv4P5IiAeSejx5IsZw25%2bxr2XXXJ7tUSTIkCCE%2bWjzwcvCpSbVLGQTuA5ixCsI1tCHXgV5yLnYRRwVvUvYsBlNaSmXLqQyaQOCjVNJ8IMvWZ%2fZHE8eezNEal9R2ZFhQtO3vnEd%2bHGYucS2iztAVOWKSWIh5vZSIyBuidrhHquXO6N1LwxM9dKtSX%2fenCccPChoMN1Nu6LxCMaSvzDY7Y9lP%2fr%2bdMYQglRxi9ScdayKGJuSFpT%2bDzBzlKHlXJTtCDU%2ff51iXLrzWFwZJa9pMtX2SrndjDZMPzwOs6LXwJxame8A1W4UIechTtBspVCIkYlM%2bkG2uW%2b99lQE2sbqrucZlsEXWrCWZuYNkKCcwuPoIXinF9fyEfHcp5q4voow3zK20v6LKD%2b2H%2fHxt8AuEzHQKm%2fWI7P6Cy3kVoOht7meK6kA3esnUCgOvZ7exxtekz6Wggao7hMGH8kEtg1p38JkmYKgUB3Ov3RTernvhlgt0pMTyUSphtds29%2f%2faM3uGpU4wlYj4JJGAdQszmaNEUdzeZVbGDJbTz8UdvQDEHT9Uhq%2f5lA4WQXv6Q3ieUWEsKqwsuom3lriTBkgWB0D7FTFVdngqvO0j68JVnV9zHbKA5Y9lZAVka41M1pQ6mQlekOMjiw%3d%3d&nature=Cw6zwN1CxR45ToY2eromTpmcYn4%3d'
-  apiLogin(login_path, login_param)
-  login_path  = 'http://api.chain-chronicle.net/session/login?cnt=1412109b8c5'
-  login_param = 'param=1FaQC07YMUGMAKXToXv4P5IiAeSejx5IsZw25%2bxr2XVtIRVCfc6wXhcLgwQD4ECFfvtVer2J3%2bEJY0mCmI74NXkGtimYJohXrIiCEEYOj7bsxyQb1R7DubsRbjmW9gxzWi9jvxZmWEOZB4zp7AKd9bliAdXOflpPl7YbrXuCIUetU1%2bpyoj9N2gFPoMa6b%2bPKwsfOQlI8dn7HHYJ3njcGv7B01%2fgoH%2bMRF7J7YP%2bYxkm9wXJZIJyfgOxkhG6Q9cHFC1Em2zfm7c%2fsB6cQ16D%2bt1vWWuKbd4IrDDIlyo41lSj2M2Nlyrb2og%2f05ES1MHjtJSBaruS92iherjq6kyhSwT3nI7yTe3mtb%2btOgDnCbkpyxa5CB%2fCbcrWxUeGeywQIsfJ3fTnlPGIcHegkIZoAihETXj%2bQe%2fwYbpsM85GU%2f%2f1CPfiwGODCey2gp6lsjwK&nature=gSkdzrOhTleJ3PCx7somVR8PoMQ%3d'
-  apiLogin(login_path, login_param)
-  # genPass
-  setAccountPassword(in_password)
+  login_path  = 'http://api.chain-chronicle.net/session/login?cnt=1412a53514d&timestamp=1379423405390'
+  login_param = 'param=1FaQC07YMUGMAKXToXv4P5IiAeSejx5IsZw25%2bxr2XUFU5WLTAIx27KNz3Pl%2bRAHYtZWbYmRU4QeIa4DRTprk9clyWubbTWvWnnTifOmb7G6gub2AKN33eXnWRh6%2bpKNMpUH%2ftvY0aGNActhDArzJeuEcEKzoG5%2fC9yvJcMycH5T3jaT6uwrHb1TJOdUIs2O%2bzqnlqYyBkbpd0DbVn%2f9Yyqyf%2fY7IIajuUEMNpOYrloAWfFNttvtbTjw8WwjfQ4XXUNDmVKABaUnXbQtClMUESbAAByYt4aOUsDxb4ou3JFQGBr2QktFLxXzzO2VWUSxAUe7TU7F5FBkrrfTp%2fEHSzEIuFgy7DTGgABc8DpkvOv89MCCnarMZCp%2fK2CG1UA0SaECKsbS2qJXTT7imIGAlNkkm1M5QvMRgqF%2f3HFctFpn32dzt00NTRGJ%2fPYBNivi&nature=Lr9yCtV3xTt3h5NGMuXs4NraRfk%3d'
+  response = apiLogin(login_path, login_param)
+  login_path  = 'http://api.chain-chronicle.net/session/login?cnt=1412a5bbe53&timestamp=1379423957587'
+  login_param = 'param=1FaQC07YMUGMAKXToXv4P5IiAeSejx5IsZw25%2bxr2XU8nwEYWyU9R0SJVlC276T1uY1W%2bPx7Cwlp9uPDTnbCLyrLbuMDUNEObPof6fUZixgWVtNfC2dhlxhEbGldBP41sfTKkcqs1PWM89m4ldOSwkR4d66Uym6K7fj4nmlZfn1r5JG5LRQbZ32yPaFtYcqSpEB5sjJtr3GTpnYyuN86p8q1hi4NBswOJ1mSNjhUnySjaWfTHg5%2bzi1yDG7lX00Lbu7qByyq4fxSVMHkG0KjxiwvWpGOdgg4ByYYnDcrR8GTMGkUPkEFkz5BzPNmQIH6GijHop5SC0RpvTsENE%2f%2fj6Sv0nboC%2bAs3AiVdxSEfJaO5phG52d9oE2hFBKeL0mOL6l3C2WtYzNilYM8P60iPq8u2a6ls2hTWSY2fp%2bwbaw5O963%2bS%2b1h%2fz60uYHLRdf&nature=WnS29LdBWj0NauSv5ikvnGzs45I%3d'
+  response = apiLogin(login_path, login_param)
+  setSession(response['login']['sid'])
+  print 'account: %s' % setAccountPassword('1234qwer')
 
 def setAccountPassword(password):
   resAccount = apiRequest('/user/get_account')
@@ -127,8 +127,7 @@ def apiLogin(path, param):
   response = None
   commandString = '%s "%s" 2>/dev/null' % (curlCommand, path)
   response = json.loads(respDecord(os.popen(commandString).read()))
-  print response
-  setSession(response['login']['sid'])
+  return response
 
 def getPlayerStatus():
   return apiRequest('/user/all_data')
@@ -305,8 +304,7 @@ def bot_mode():
 
 def main():
   if sys.argv[1] == 'login':
-    #login(sys.argv[2], sys.argv[3])
-    print('command close')
+    login(sys.argv[2], sys.argv[3])
   elif sys.argv[1] == 'session':
     newSession = sys.argv[2]
     setSession(newSession)
@@ -359,11 +357,8 @@ def main():
       
   elif sys.argv[1] == 'genPass':
     password = sys.argv[2]
-    resAccount = apiRequest('/user/get_account')
-    queryString = {}
-    queryString.update({'pass' : password})
-    apiRequest('/user/set_password', queryString)
-    print 'account: %s' % (resAccount['account'])
+    setAccountPassword(password)
+    print 'account: %s' % setAccountPassword(password)
   else:
     print 'command error - %s' % sys.argv[1]
 
