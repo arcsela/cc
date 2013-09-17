@@ -28,7 +28,7 @@ def login(in_account, in_password):
   login_param = 'param=1FaQC07YMUGMAKXToXv4P5IiAeSejx5IsZw25%2bxr2XU8nwEYWyU9R0SJVlC276T1uY1W%2bPx7Cwlp9uPDTnbCLyrLbuMDUNEObPof6fUZixgWVtNfC2dhlxhEbGldBP41sfTKkcqs1PWM89m4ldOSwkR4d66Uym6K7fj4nmlZfn1r5JG5LRQbZ32yPaFtYcqSpEB5sjJtr3GTpnYyuN86p8q1hi4NBswOJ1mSNjhUnySjaWfTHg5%2bzi1yDG7lX00Lbu7qByyq4fxSVMHkG0KjxiwvWpGOdgg4ByYYnDcrR8GTMGkUPkEFkz5BzPNmQIH6GijHop5SC0RpvTsENE%2f%2fj6Sv0nboC%2bAs3AiVdxSEfJaO5phG52d9oE2hFBKeL0mOL6l3C2WtYzNilYM8P60iPq8u2a6ls2hTWSY2fp%2bwbaw5O963%2bS%2b1h%2fz60uYHLRdf&nature=WnS29LdBWj0NauSv5ikvnGzs45I%3d'
   response = apiLogin(login_path, login_param)
   setSession(response['login']['sid'])
-  print 'account: %s' % setAccountPassword('1234qwer')
+  print 'account: %s' % setAccountPassword(in_password)
 
 def setAccountPassword(password):
   resAccount = apiRequest('/user/get_account')
