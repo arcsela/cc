@@ -234,6 +234,12 @@ def quest(questIdList):
   questIdList.reverse()
   statusInfo = getPlayerStatus()
   
+  # manually input situation
+  if len(questIdList) == 1:
+    questId = questIdList.pop()      
+    questInfo  = parseMissionStatus(questId, statusInfo)
+    return __battleQuest__(questInfo)
+  
   questInfo = None
   while len(questIdList) > 0:
     questId = questIdList.pop()      
