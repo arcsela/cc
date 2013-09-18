@@ -243,7 +243,7 @@ def quest(questIdList):
     if not checkQuestClear(questInfo):
       return __battleQuest__(questInfo)
     elif len(questIdList) == 0:
-      return __battleQuest__(questInfo)
+      return questMain()
     else:
       print '%s - cleared' % (questId)
   print 'no matched quest'
@@ -262,6 +262,8 @@ def questMain():
     queryString.update({'qid' : questId})
     queryString.update({'type': questType})
     print apiRequest('/quest/treasure', queryString)
+    return questId
+  return None
     
 def getFriendPendingList():
   resFriend = apiRequest('/friend/offered')
