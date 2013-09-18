@@ -242,12 +242,9 @@ def quest(questIdList):
       continue
     if not checkQuestClear(questInfo):
       return __battleQuest__(questInfo)
-    elif len(questIdList) == 0:
-      return questMain()
     else:
       print '%s - cleared' % (questId)
-  print 'no matched quest'
-  return None
+  return questMain()
 
 def questMain():
   statusInfo = getPlayerStatus()
