@@ -304,14 +304,45 @@ def bossList():
   for body in resBossList['body']:
     if body['type'] == 10:
       return body['data']
-
+    
 def printBossList(resBossList):
   for boss in resBossList:
     bossId = boss['boss_id']
     bossTime = (boss['validtime'] - int(time.time())) / 60
     bossLv = boss['boss_param']['lv']
+    bossHp = boss['boss_param']['hp']
+    bossHpMax = boss['boss_param']['hpMax']
     bossOwner = boss['discoverer_name']
-    print '%9s - %3d minutes - Lv:%2d - %s' % (bossId, bossTime, bossLv, bossOwner.encode('utf-8'))
+    if bossTime > 0:
+      print '%9s - %3d minutes - Lv:%2d (%s/%s) - %s' % (bossId, bossTime, bossLv, bossHp, bossHpMax, bossOwner.encode('utf-8'))
+
+def bossInfo(resBossList, bossId):
+  for boss in resBossList:
+    if str(boss['boss_id']) == str(bossId):
+      return boss
+    
+def bossFight(resBossInfo):
+  bossId = resBossInfo['boss_id']
+  bossHp = resBossInfo['boss_param']['hp']
+  bossFightInit(bossId)
+  bossFightResult(bossId, bossHp)
+
+def bossFightInit(bossId):
+  print 'fight with boss: %s' % (bossId)
+  queryString = {}
+  queryString.update({'bid' : bossId})
+  queryString.update({'use' : '1'})
+  queryString.update({'fid' : loadFriend()})
+  apiRequest('/raid/entry', queryString)
+  
+def bossFightResult(bossId, bossDamage):
+  print 'fight end: %s' % (bossId)
+  queryString = {}
+  queryString.update({'bid' : bossId})
+  queryString.update({'res' : '1'})
+  queryString.update({'damage' : bossDamage})
+  queryString.update({'t' : '8'})
+  apiRequest('/raid/result', queryString)
 
 def bot_mode():
   sleepTime = loadSleepTime()
@@ -389,7 +420,9 @@ def main():
         printBossList(res)
       elif subCommand == 'fight':
         bossId = sys.argv[3]
-        bossFight(bossId)
+        res = bossList()
+        res = bossInfo(res, bossId)
+        bossFight(res)
       else:
         raise
     except:
