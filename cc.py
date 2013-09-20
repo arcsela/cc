@@ -51,6 +51,9 @@ def loadFriend():
 def loadQuestIdList():
   return json.loads(config.get('bot', 'questIdList'))
 
+def loadQuestFinal():
+  return config.get('bot', 'questidfinal')
+
 def loadSleepTime():
   return int(config.get('bot', 'sleeptime'))
 
@@ -257,7 +260,12 @@ def quest(questIdList):
       return __battleQuest__(questInfo)
     else:
       print '%s - cleared' % (questId)
-  return questMain()
+  questId = loadQuestFinal()
+  questInfo = parseMissionStatus(questId, statusInfo)
+  if questInfo is not None:
+    __battleQuest__(questInfo)
+  else:
+    return questMain()
 
 def questMain():
   statusInfo = getPlayerStatus()
