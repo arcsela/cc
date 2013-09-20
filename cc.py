@@ -144,7 +144,7 @@ def printPlayerStatus(playerStatus = None):
   print 'Gold: %s / FP: %s / Stone: %s' % (playerGold, playerFP, playerStone)
   print 'exp: %s/%s (Lv %s)' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'], playerStatus['body'][4]['data']['lv'])
   print 'stamina: %s/%s' % ((playerStatus['body'][4]['data']['staminaMax'] - (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 / 8) - 1, playerStatus['body'][4]['data']['staminaMax'])
-  print 'soul: %s/%s' % ((playerStatus['body'][4]['data']['powerMax'] - (playerStatus['body'][4]['data']['powerRefillTime'] - int(time.time())) / 60 / 8) - 1, playerStatus['body'][4]['data']['powerMax'])
+  print 'soul: %s/%s' % ((playerStatus['body'][4]['data']['powerMax'] - (playerStatus['body'][4]['data']['pwrRefillTime'] - int(time.time())) / 60 / 8) - 1, playerStatus['body'][4]['data']['powerMax'])
 
 def printPlayerInfo(playerStatus = None):
   if playerStatus is None:
