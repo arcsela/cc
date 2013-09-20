@@ -318,12 +318,16 @@ def printBossList(resBossList):
     else:
       bossCollect(bossId)
 
-def bossInfo(resBossList, bossId):
+def bossInfo(resBossList, bossId = None):
   for boss in resBossList:
-    if str(boss['boss_id']) == str(bossId):
+    if (bossId is None):
+      return boss
+    elif (str(boss['boss_id']) == str(bossId)):
       return boss
     
 def bossFight(resBossInfo):
+  if resBossInfo is None:
+    return None
   bossId = resBossInfo['boss_id']
   bossHp = resBossInfo['boss_param']['hp']
   bossFightInit(bossId)
@@ -365,6 +369,13 @@ def bot_mode():
       printPlayerStatus(playerStatus)
       if playerStatus['body'][4]['data']['stmRefillTime'] < int(time.time()):
         break
+      soulMax  = playerStatus['body'][4]['data']['powerMax']
+      soulTime = (playerStatus['body'][4]['data']['pwrRefillTime'] - int(time.time())) / 60
+      soulCur  = soulMax if soulTime < 0 else soulMax - soulTime / 30 - 1
+      if soulCur > 0:
+        resBossList = bossList()
+        resBossInfo = bossInfo(resBossList)
+        bossFight(resBossInfo)
       print 'sleep: %s/%s\n' % (currentSleepTime, sleepTime)
       time.sleep(60)
       currentSleepTime += 1
