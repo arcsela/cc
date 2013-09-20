@@ -313,7 +313,7 @@ def printBossList(resBossList):
     bossHp = boss['boss_param']['hp']
     bossHpMax = boss['boss_param']['hpMax']
     bossOwner = boss['discoverer_name']
-    if bossTime > 0 or bossHp > 0:
+    if bossTime > 0 and bossHp > 0:
       print '%9s - %3d minutes - Lv:%2d (%s/%s) - %s' % (bossId, bossTime, bossLv, bossHp, bossHpMax, bossOwner.encode('utf-8'))
 
 def bossInfo(resBossList, bossId):
