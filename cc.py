@@ -141,10 +141,16 @@ def printPlayerStatus(playerStatus = None):
     if item['item_id'] == 11:
       playerFP = item['cnt']
   playerStone = playerStatus['body'][10]['data']
+  staMax  = playerStatus['body'][4]['data']['staminaMax']
+  staTime = (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 
+  staCur  = staMax if staTime < 0 else staMax - staTime / 8 - 1
+  soulMax  = playerStatus['body'][4]['data']['powerMax']
+  soulTime = (playerStatus['body'][4]['data']['pwrRefillTime'] - int(time.time())) / 60
+  soulCur  = soulMax if soulTime < 0 else soulMax - soulTime / 30 - 1
   print 'Gold: %s / FP: %s / Stone: %s' % (playerGold, playerFP, playerStone)
   print 'exp: %s/%s (Lv %s)' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'], playerStatus['body'][4]['data']['lv'])
-  print 'stamina: %s/%s' % ((playerStatus['body'][4]['data']['staminaMax'] - (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 / 8) - 1, playerStatus['body'][4]['data']['staminaMax'])
-  print 'soul: %s/%s' % ((playerStatus['body'][4]['data']['powerMax'] - (playerStatus['body'][4]['data']['pwrRefillTime'] - int(time.time())) / 60 / 8) - 1, playerStatus['body'][4]['data']['powerMax'])
+  print 'stamina: %s/%s (%s)' % (staCur, staMax, staTime)
+  print 'soul: %s/%s (%s)' % (soulCur, soulMax, soulTime)
 
 def printPlayerInfo(playerStatus = None):
   if playerStatus is None:
