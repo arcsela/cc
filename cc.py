@@ -327,6 +327,7 @@ def bossFight(resBossInfo):
   bossId = resBossInfo['boss_id']
   bossHp = resBossInfo['boss_param']['hp']
   bossFightInit(bossId)
+  time.sleep(30)
   bossFightResult(bossId, bossHp)
   bossCollect(bossId)
 
