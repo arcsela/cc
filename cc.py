@@ -315,6 +315,8 @@ def printBossList(resBossList):
     bossOwner = boss['discoverer_name']
     if bossTime > 0 and bossHp > 0:
       print '%9s - %3d minutes - Lv:%2d (%s/%s) - %s' % (bossId, bossTime, bossLv, bossHp, bossHpMax, bossOwner.encode('utf-8'))
+    else:
+      bossCollect(bossId)
 
 def bossInfo(resBossList, bossId):
   for boss in resBossList:
@@ -326,6 +328,7 @@ def bossFight(resBossInfo):
   bossHp = resBossInfo['boss_param']['hp']
   bossFightInit(bossId)
   bossFightResult(bossId, bossHp)
+  bossCollect(bossId)
 
 def bossFightInit(bossId):
   print 'fight with boss: %s' % (bossId)
@@ -343,6 +346,12 @@ def bossFightResult(bossId, bossDamage):
   queryString.update({'damage' : bossDamage})
   queryString.update({'t' : '8'})
   apiRequest('/raid/result', queryString)
+  
+def bossCollect(bossId):
+  print 'collect: %s' % (bossId)
+  queryString = {}
+  queryString.update({'bid' : bossId})
+  apiRequest('/raid/record', queryString)  
 
 def bot_mode():
   sleepTime = loadSleepTime()
