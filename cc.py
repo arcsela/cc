@@ -143,7 +143,8 @@ def printPlayerStatus(playerStatus = None):
   playerStone = playerStatus['body'][10]['data']
   print 'Gold: %s / FP: %s / Stone: %s' % (playerGold, playerFP, playerStone)
   print 'exp: %s/%s (Lv %s)' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'], playerStatus['body'][4]['data']['lv'])
-  print 'stamina: %s/%s' % (playerStatus['body'][4]['data']['staminaMax'] - (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 / 8, playerStatus['body'][4]['data']['staminaMax'])
+  print 'stamina: %s/%s' % ((playerStatus['body'][4]['data']['staminaMax'] - (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 / 8) - 1, playerStatus['body'][4]['data']['staminaMax'])
+  print 'soul: %s/%s' % ((playerStatus['body'][4]['data']['powerMax'] - (playerStatus['body'][4]['data']['powerRefillTime'] - int(time.time())) / 60 / 8) - 1, playerStatus['body'][4]['data']['powerMax'])
 
 def printPlayerInfo(playerStatus = None):
   if playerStatus is None:
@@ -359,6 +360,21 @@ def main():
       print('  request <uid> : request <uid> for friend')
       print('  pending       : list who is asking to be your friend')
       print('  accept  <uid> : accept <uid> to be your friend')
+      
+  elif sys.argv[1] == 'boss':
+    try:
+      subCommand = sys.argv[2]
+      if subCommand == 'list':
+        bossList()
+      elif subCommand == 'fight':
+        bossId = sys.argv[3]
+        bossFight(bossId)
+      else:
+        raise
+    except:
+      print('command for boss:')
+      print('  list')
+      print('  fight <bossid> : fight with boss')
       
   elif sys.argv[1] == 'genPass':
     password = sys.argv[2]
