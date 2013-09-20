@@ -299,6 +299,20 @@ def friendRequest(uid):
   queryString.update({'fid' : uid})
   apiRequest('/friend/offer', queryString)
       
+def bossList():
+  resBossList = apiRequest('/raid/list')
+  for body in resBossList['body']:
+    if body['type'] == 10:
+      return body['data']
+
+def printBossList(resBossList):
+  for boss in resBossList:
+    bossId = boss['boss_id']
+    bossTime = (boss['validtime'] - int(time.time())) / 60
+    bossLv = boss['boss_param']['lv']
+    bossOwner = boss['discoverer_name']
+    print '%9s - %3d minutes - Lv:%2d - %s' % (bossId, bossTime, bossLv, bossOwner.encode('utf-8'))
+
 def bot_mode():
   sleepTime = loadSleepTime()
   while True:
@@ -371,7 +385,8 @@ def main():
     try:
       subCommand = sys.argv[2]
       if subCommand == 'list':
-        bossList()
+        res = bossList()
+        printBossList(res)
       elif subCommand == 'fight':
         bossId = sys.argv[3]
         bossFight(bossId)
