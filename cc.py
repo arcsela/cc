@@ -382,6 +382,7 @@ def bot_mode():
       soulCur  = soulMax if soulTime < 0 else soulMax - soulTime / 30 - 1
       if soulCur > 0:
         resBossList = bossList()
+        printBossList(resBossList)
         resBossInfo = bossInfo(resBossList)
         bossFight(resBossInfo)
       print 'sleep: %s/%s\n' % (currentSleepTime, sleepTime)
