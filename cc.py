@@ -383,7 +383,7 @@ def bossFightInit(bossId):
   queryString.update({'bid' : bossId})
   queryString.update({'use' : '1'})
   queryString.update({'fid' : loadFriend()})
-  apiRequest('/raid/entry', queryString)
+  return apiRequest('/raid/entry', queryString)
   
 def bossFightResult(bossId, bossDamage):
   print 'fight end: %s' % (bossId)
