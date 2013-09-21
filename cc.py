@@ -415,9 +415,9 @@ def bot_mode():
       soulMax  = playerStatus['body'][4]['data']['powerMax']
       soulTime = (playerStatus['body'][4]['data']['pwrRefillTime'] - int(time.time())) / 60
       soulCur  = soulMax if soulTime < 0 else soulMax - soulTime / 30 - 1
+      resBossList = bossList()
+      printBossList(resBossList)
       if soulCur > 0:
-        resBossList = bossList()
-        printBossList(resBossList)
         resBossInfo = bossInfo(resBossList)
         bossFight(resBossInfo)
       print 'sleep: %s/%s\n' % (currentSleepTime, sleepTime)
