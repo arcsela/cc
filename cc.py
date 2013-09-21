@@ -19,7 +19,10 @@ def login(in_account, in_password):
   setSession('INVALID')
   # takeover account data
   param = 'uuid=ando934daece-edc1-4435-9560-3313cbfe1c2f&account=' + in_account + '&pass=' + in_password
-  apiRequest('/user/takeover', None, param)
+  response = apiRequest('/user/takeover', None, param)
+  if response['res'] != 0:
+    print 'takeover err'
+    exit()
   # generate session id
   login_path  = 'http://api.chain-chronicle.net/session/login?cnt=1412a53514d&timestamp=1379423405390'
   login_param = 'param=1FaQC07YMUGMAKXToXv4P5IiAeSejx5IsZw25%2bxr2XUFU5WLTAIx27KNz3Pl%2bRAHYtZWbYmRU4QeIa4DRTprk9clyWubbTWvWnnTifOmb7G6gub2AKN33eXnWRh6%2bpKNMpUH%2ftvY0aGNActhDArzJeuEcEKzoG5%2fC9yvJcMycH5T3jaT6uwrHb1TJOdUIs2O%2bzqnlqYyBkbpd0DbVn%2f9Yyqyf%2fY7IIajuUEMNpOYrloAWfFNttvtbTjw8WwjfQ4XXUNDmVKABaUnXbQtClMUESbAAByYt4aOUsDxb4ou3JFQGBr2QktFLxXzzO2VWUSxAUe7TU7F5FBkrrfTp%2fEHSzEIuFgy7DTGgABc8DpkvOv89MCCnarMZCp%2fK2CG1UA0SaECKsbS2qJXTT7imIGAlNkkm1M5QvMRgqF%2f3HFctFpn32dzt00NTRGJ%2fPYBNivi&nature=Lr9yCtV3xTt3h5NGMuXs4NraRfk%3d'
@@ -29,6 +32,12 @@ def login(in_account, in_password):
   response = apiLogin(login_path, login_param)
   setSession(response['login']['sid'])
   print 'account: %s' % setAccountPassword(in_password)
+
+def login2(header, body):
+  setSession('INVALID')
+  response = apiLogin(header, body)
+  setSession(response['login']['sid'])
+  print 'account: %s' % setAccountPassword('1234qwer')
 
 def setAccountPassword(password):
   resAccount = apiRequest('/user/get_account')
@@ -143,6 +152,8 @@ def printPlayerStatus(playerStatus = None):
       playerGold = item['cnt']
     if item['item_id'] == 11:
       playerFP = item['cnt']
+    if item['item_id'] == 13:
+      playerRing = item['cnt']
   playerStone = playerStatus['body'][10]['data']
   staMax  = playerStatus['body'][4]['data']['staminaMax']
   staTime = (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 
@@ -150,16 +161,37 @@ def printPlayerStatus(playerStatus = None):
   soulMax  = playerStatus['body'][4]['data']['powerMax']
   soulTime = (playerStatus['body'][4]['data']['pwrRefillTime'] - int(time.time())) / 60
   soulCur  = soulMax if soulTime < 0 else soulMax - soulTime / 30 - 1
-  print 'Gold: %s / FP: %s / Stone: %s' % (playerGold, playerFP, playerStone)
-  print 'exp: %s/%s (Lv %s)' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'], playerStatus['body'][4]['data']['lv'])
-  print 'stamina: %s/%s (%s)' % (staCur, staMax, staTime)
-  print 'soul: %s/%s (%s)' % (soulCur, soulMax, soulTime)
+#  print 'Gold: %s / FP: %s / Stone: %s' % (playerGold, playerFP, playerStone)
+#  print 'exp: %s/%s (Lv %s)' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'], playerStatus['body'][4]['data']['lv'])
+  print 'RANK%s, Exp: %s/%s' % (playerStatus['body'][4]['data']['lv'], playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'])
+  for form in playerStatus['body'][4]['data']['mainForm']:
+    printCardInfo(form,playerStatus)
+  for form in playerStatus['body'][4]['data']['subForm']:
+    printCardInfo(form,playerStatus)
+  print 'Stone: %s , Gold: %s , AC: %s, Ring: %s, ' % (playerStone, playerGold, playerFP, playerRing) + 'Card: %s/%s' % (len(playerStatus['body'][5]['data']), playerStatus['body'][4]['data']['cardMax']) 
+  print 'AP: %s/%s (%s)' % (staCur, staMax, staTime)
+  print 'Soul: %s/%s (%s)' % (soulCur, soulMax, soulTime)
 
 def printPlayerInfo(playerStatus = None):
   if playerStatus is None:
     playerStatus = getPlayerStatus()
-  print 'account id: %s' % (playerStatus['body'][4]['data']['open_id'])
-  print 'fid: %s' % (playerStatus['body'][4]['data']['uid'])
+  Aid = str(playerStatus['body'][4]['data']['open_id'])
+  print 'AID: %s,%s,%s' % (Aid[:3], Aid[3:6], Aid[6:])
+  print 'FID: %s' % (playerStatus['body'][4]['data']['uid'])
+  printPlayerInfo
+
+def printCardInfo(idx, playerStatus = None):
+  if playerStatus is None:
+    playerStatus = getPlayerStatus()
+  for item in playerStatus['body'][5]['data']:
+    if item['idx'] == int(idx):
+      if item['type'] == 0:
+        print '%sS(%s) ' % ((item['maxlv'] - item['limit_break'] * 5) / 10 - 1, item['limit_break']) + 'Lv%2s, ' % item['lv'] + 'EXP: %5s/%5s, ' % (item['disp_exp'], item['next_exp']) + 'HP:%5s, ATK:%5s, ' % (item['hp'], item['atk']) + 'WP:%2s/%2s/%2s, ' % (item['weaponAttack'], item['weaponCritical'], item['weaponGuard']) + 'CID:%5d' % item['id']
+        return
+      else:
+        print item
+        return
+  #print 'No matching card'
 
 def parseMissionStatus(questid, playerStatus = None):
   if playerStatus is None:
@@ -338,7 +370,9 @@ def bossFight(resBossInfo):
     return None
   bossId = resBossInfo['boss_id']
   bossHp = resBossInfo['boss_param']['hp']
-  bossFightInit(bossId)
+  resInit = bossFightInit(bossId)
+  if resInit['res'] != 0:
+    return None
   time.sleep(30)
   bossFightResult(bossId, bossHp)
   bossCollect(bossId)
@@ -358,7 +392,8 @@ def bossFightResult(bossId, bossDamage):
   queryString.update({'res' : '1'})
   queryString.update({'damage' : bossDamage})
   queryString.update({'t' : '8'})
-  apiRequest('/raid/result', queryString)
+  resFightResult = apiRequest('/raid/result', queryString)
+  printBattleResult( resFightResult )
   
 def bossCollect(bossId):
   print 'collect: %s' % (bossId)
@@ -390,8 +425,15 @@ def bot_mode():
       currentSleepTime += 1
 
 def main():
+  sys.path.append(os.getcwd())
   if sys.argv[1] == 'login':
-    login(sys.argv[2], sys.argv[3])
+    if os.path.exists('login_http.py'):
+      import login_http
+      login2(login_http.header, login_http.body)
+    elif len(sys.argv) >= 4:
+      login(sys.argv[2], sys.argv[3])
+    else:
+      print 'login <id> <pw>'
   elif sys.argv[1] == 'session':
     newSession = sys.argv[2]
     setSession(newSession)
@@ -415,7 +457,7 @@ def main():
     questId = sys.argv[2]
     printMissionStatus(questId)
   elif sys.argv[1] == 'playerInfo':
-    printPlayerInfo()
+    #printPlayerInfo()
     printPlayerStatus()
     
   elif sys.argv[1] == 'friend':
@@ -436,6 +478,7 @@ def main():
       else:
         raise
     except:
+      printPlayerInfo()
       print('command for friend:')
       print('  list          : list current friends')
       print('  request <uid> : request <uid> for friend')
@@ -464,6 +507,33 @@ def main():
     password = sys.argv[2]
     setAccountPassword(password)
     print 'account: %s' % setAccountPassword(password)
+    
+  elif sys.argv[1] == 'recv':
+    presentIdList = apiRequest('/present/list?')['body'][0]['data']
+    queryString = {}
+    for present in presentIdList:
+      queryString.update({'p' : present['idx']})
+      esponse = apiRequest('/present/recv', queryString)
+      print response
+      time.sleep(1)
+    print 'recv end'
+    
+  elif sys.argv[1] == 'acdraw':
+    num = sys.argv[2]
+    queryString = {}
+    queryString.update({'t' : 0})
+    queryString.update({'c' : num})
+    response = apiRequest('/gacha', queryString)
+    if response['res'] == 0:
+      print response
+
+  elif sys.argv[1] == 'test':
+    response = apiRequest('/user/all_data')
+    print response #['body'][2]['data']
+    
+#  elif sys.argv[1] == 'card':
+#    printCardInfo(sys.argv[2])
+    
   else:
     print 'command error - %s' % sys.argv[1]
 
