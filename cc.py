@@ -8,6 +8,7 @@ import random
 import json
 from StringIO import StringIO
 import gzip
+import gacha
 
 configFile = 'cc.conf'
 config = SafeConfigParser()
@@ -186,7 +187,7 @@ def printCardInfo(idx, playerStatus = None):
   for item in playerStatus['body'][5]['data']:
     if item['idx'] == int(idx):
       if item['type'] == 0:
-        print '%sS(%s) ' % ((item['maxlv'] - item['limit_break'] * 5) / 10 - 1, item['limit_break']) + 'Lv%2s, ' % item['lv'] + 'EXP: %5s/%5s, ' % (item['disp_exp'], item['next_exp']) + 'HP:%5s, ATK:%5s, ' % (item['hp'], item['atk']) + 'WP:%2s/%2s/%2s, ' % (item['weaponAttack'], item['weaponCritical'], item['weaponGuard']) + 'CID:%5d' % item['id']
+        print '%sS(%s) ' % ((item['maxlv'] - item['limit_break'] * 5) / 10 - 1, item['limit_break']) + 'Lv%2s, ' % item['lv'] + 'EXP: %5s/%5s, ' % (item['disp_exp'], item['next_exp']) + 'HP:%5s, ATK:%5s, ' % (item['hp'], item['atk']) + 'WP:%2s/%2s/%2s, ' % (item['weaponAttack'], item['weaponCritical'], item['weaponGuard']) + '%s' % gacha.i2n(int(item['id']))
         return
       else:
         print item
@@ -250,7 +251,11 @@ def printBattleResult(in_battleResult):
     if in_battleResult.has_key('earns'):
       print 'EXP: %s / GOLD: %s (bonus %s)' % (in_battleResult['earns']['exp'], in_battleResult['earns']['gold'], in_battleResult['earns']['bonus_gold'])
       for item in in_battleResult['earns']['treasure']:
-        print 'Treasure: %s - %s x %s' % (item['type'], item['id'], item['val'])
+        if item['type'] == 'card':
+          #print 'Treasure: %s - %s x %s' % (item['type'], gacha.i2n(int(item['id'])), item['val'])
+          print 'Treasure: %s - %s x %s' % (item['type'], item['id'], item['val'])
+        else:
+          print 'Treasure: %s - %s x %s' % (item['type'], item['id'], item['val'])
     if in_battleResult.has_key('quest_reward'):
       print 'QUEST COMPLETED REWARD!!!'
       print in_battleResult['quest_reward']
@@ -404,25 +409,37 @@ def bossCollect(bossId):
 def bot_mode():
   sleepTime = loadSleepTime()
   while True:
+    playerStatus = getPlayerStatus()
+    printPlayerStatus(playerStatus)
     currentSleepTime = 0
     questIdList = loadQuestIdList()
     quest(questIdList)
     while currentSleepTime < sleepTime:
-      playerStatus = getPlayerStatus()
-      printPlayerStatus(playerStatus)
       if playerStatus['body'][4]['data']['stmRefillTime'] < int(time.time()):
         break
       soulMax  = playerStatus['body'][4]['data']['powerMax']
       soulTime = (playerStatus['body'][4]['data']['pwrRefillTime'] - int(time.time())) / 60
       soulCur  = soulMax if soulTime < 0 else soulMax - soulTime / 30 - 1
+      printBossList(bossList())
       resBossList = bossList()
-      printBossList(resBossList)
       if soulCur > 0:
         resBossInfo = bossInfo(resBossList)
         bossFight(resBossInfo)
-      print 'sleep: %s/%s\n' % (currentSleepTime, sleepTime)
+      print 'sleep: %s/%s' % (currentSleepTime, sleepTime)
       time.sleep(60)
       currentSleepTime += 1
+
+def printCard(playerStatus = None):
+  if playerStatus is None:
+    playerStatus = getPlayerStatus()
+  for item in playerStatus['body'][5]['data']:
+    if item['type'] == 0:
+      print '%sS(%s) ' % ((item['maxlv'] - item['limit_break'] * 5) / 10 - 1, item['limit_break']) + 'Lv%2s, ' % item['lv'] + 'EXP: %5s/%5s, ' % (item['disp_exp'], item['next_exp']) + 'HP:%5s, ATK:%5s, ' % (item['hp'], item['atk']) + 'WP:%2s/%2s/%2s, ' % (item['weaponAttack'], item['weaponCritical'], item['weaponGuard']) + 'No.%05d %s' % (int(item['id']), gacha.i2n(int(item['id'])))
+#      return
+    else:
+      print item
+#      return
+  #print 'No matching card'
 
 def main():
   sys.path.append(os.getcwd())
@@ -531,9 +548,14 @@ def main():
     response = apiRequest('/user/all_data')
     print response #['body'][2]['data']
     
-#  elif sys.argv[1] == 'card':
-#    printCardInfo(sys.argv[2])
+  elif sys.argv[1] == 'card':
+    printCard()
     
+  elif sys.argv[1] == 'recovery_ap':
+    queryString = {}
+    queryString.update({'type' : 1})
+    response = apiRequest('/user/recover_ap', queryString)
+      
   else:
     print 'command error - %s' % sys.argv[1]
 
