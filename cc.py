@@ -179,7 +179,6 @@ def printPlayerInfo(playerStatus = None):
   Aid = str(playerStatus['body'][4]['data']['open_id'])
   print 'AID: %s,%s,%s' % (Aid[:3], Aid[3:6], Aid[6:])
   print 'FID: %s' % (playerStatus['body'][4]['data']['uid'])
-  printPlayerInfo
 
 def printCardInfo(idx, playerStatus = None):
   if playerStatus is None:
@@ -363,12 +362,20 @@ def printBossList(resBossList):
     else:
       bossCollect(bossId)
 
-def bossInfo(resBossList, bossId = None):
+def bossInfo(resBossList, bossId = None, myId = None):
   for boss in resBossList:
-    if (bossId is None):
+    if (bossId is None) and (myId is None):
+      # return first boss if nothing is provided
       return boss
+    elif (myId is None):
+      # return only my own boss if myId is provided
+      if str(boss['discoverer']) == str(myId):
+        return boss
+      else:
+        continue
     elif (str(boss['boss_id']) == str(bossId)):
       return boss
+  return None
     
 def bossFight(resBossInfo, currentSleepTime = None, sleepTime = None):
   if resBossInfo is None:
@@ -425,16 +432,21 @@ def bot_mode():
       printPlayerStatus(playerStatus)
       if playerStatus['body'][4]['data']['stmRefillTime'] < int(time.time()):
         break
+      staMax  = playerStatus['body'][4]['data']['staminaMax']
+      staTime = (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60
+      staCur  = staMax if staTime < 0 else staMax - staTime / 8 - 1
       soulMax  = playerStatus['body'][4]['data']['powerMax']
       soulTime = (playerStatus['body'][4]['data']['pwrRefillTime'] - int(time.time())) / 60
       soulCur  = soulMax if soulTime < 0 else soulMax - soulTime / 30 - 1
       printBossList(bossList())
       resBossList = bossList()
       if soulCur > 0:
-        resBossInfo = bossInfo(resBossList)
+        resBossInfo = bossInfo(resBossList, playerStatus['body'][4]['data']['uid'])
         if resBossInfo is not None:
           bossFight(resBossInfo, currentSleepTime, sleepTime)
           break
+        elif staCur >= 4:
+          quest('220103')
       print 'sleep: %s/%s' % (currentSleepTime, sleepTime)
       time.sleep(60)
       currentSleepTime += 1
