@@ -421,6 +421,7 @@ def bot_mode():
     questIdList = loadQuestIdList()
     quest(questIdList)
     while currentSleepTime < sleepTime:
+      playerStatus = getPlayerStatus()
       if playerStatus['body'][4]['data']['stmRefillTime'] < int(time.time()):
         break
       soulMax  = playerStatus['body'][4]['data']['powerMax']
