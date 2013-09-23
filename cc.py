@@ -16,6 +16,9 @@ config.read(configFile)
 
 _server_host = 'http://api.chain-chronicle.net'
 
+RECOVER_TIME_STA  = 8
+RECOVER_TIME_SOUL = 30
+
 def login(in_account, in_password):
   setSession('INVALID')
   # takeover account data
@@ -158,10 +161,10 @@ def printPlayerStatus(playerStatus = None):
   playerStone = playerStatus['body'][10]['data']
   staMax  = playerStatus['body'][4]['data']['staminaMax']
   staTime = (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60 
-  staCur  = staMax if staTime < 0 else staMax - staTime / 8 - 1
+  staCur  = staMax if staTime < 0 else staMax - staTime / RECOVER_TIME_STA - 1
   soulMax  = playerStatus['body'][4]['data']['powerMax']
   soulTime = (playerStatus['body'][4]['data']['pwrRefillTime'] - int(time.time())) / 60
-  soulCur  = soulMax if soulTime < 0 else soulMax - soulTime / 30 - 1
+  soulCur  = soulMax if soulTime < 0 else soulMax - soulTime / RECOVER_TIME_SOUL - 1
 #  print 'Gold: %s / FP: %s / Stone: %s' % (playerGold, playerFP, playerStone)
 #  print 'exp: %s/%s (Lv %s)' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'], playerStatus['body'][4]['data']['lv'])
   print 'RANK%s, Exp: %s/%s' % (playerStatus['body'][4]['data']['lv'], playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'])
@@ -170,8 +173,8 @@ def printPlayerStatus(playerStatus = None):
   for form in playerStatus['body'][4]['data']['subForm']:
     printCardInfo(form,playerStatus)
   print 'Stone: %s , Gold: %s , AC: %s, Ring: %s, ' % (playerStone, playerGold, playerFP, playerRing) + 'Card: %s/%s' % (len(playerStatus['body'][5]['data']), playerStatus['body'][4]['data']['cardMax']) 
-  print 'AP: %s/%s (%s)' % (staCur, staMax, staTime)
-  print 'Soul: %s/%s (%s)' % (soulCur, soulMax, soulTime)
+  print 'AP: %s/%s (%s)' % (staCur, staMax, staTime % RECOVER_TIME_STA)
+  print 'Soul: %s/%s (%s)' % (soulCur, soulMax, soulTime % RECOVER_TIME_SOUL)
 
 def printPlayerInfo(playerStatus = None):
   if playerStatus is None:
@@ -428,10 +431,10 @@ def bot_mode():
         break
       staMax  = playerStatus['body'][4]['data']['staminaMax']
       staTime = (playerStatus['body'][4]['data']['stmRefillTime'] - int(time.time())) / 60
-      staCur  = staMax if staTime < 0 else staMax - staTime / 8 - 1
+      staCur  = staMax if staTime < 0 else staMax - staTime / RECOVER_TIME_STA - 1
       soulMax  = playerStatus['body'][4]['data']['powerMax']
       soulTime = (playerStatus['body'][4]['data']['pwrRefillTime'] - int(time.time())) / 60
-      soulCur  = soulMax if soulTime < 0 else soulMax - soulTime / 30 - 1
+      soulCur  = soulMax if soulTime < 0 else soulMax - soulTime / RECOVER_TIME_SOUL - 1
       printBossList(bossList())
       resBossList = bossList()
       if soulCur > 0:
