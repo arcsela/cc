@@ -367,7 +367,7 @@ def bossInfo(resBossList, bossId = None, myId = None):
     if (bossId is None) and (myId is None):
       # return first boss if nothing is provided
       return boss
-    elif (myId is None):
+    elif (myId is not None):
       # return only my own boss if myId is provided
       if str(boss['discoverer']) == str(myId):
         return boss
@@ -385,13 +385,7 @@ def bossFight(resBossInfo, currentSleepTime = None, sleepTime = None):
   resInit = bossFightInit(bossId)
   if resInit['res'] != 0:
     return None
-  if (currentSleepTime is None): 
-    time.sleep(60)
-  else:
-    while currentSleepTime < sleepTime:
-      print 'sleep: %s/%s' % (currentSleepTime, sleepTime)
-      time.sleep(60)
-      currentSleepTime += 1
+  time.sleep(60)
   bossFightResult(bossId, bossHp)
   bossCollect(bossId)
 
@@ -441,7 +435,7 @@ def bot_mode():
       printBossList(bossList())
       resBossList = bossList()
       if soulCur > 0:
-        resBossInfo = bossInfo(resBossList, playerStatus['body'][4]['data']['uid'])
+        resBossInfo = bossInfo(resBossList, None, playerStatus['body'][4]['data']['uid'])
         if resBossInfo is not None:
           bossFight(resBossInfo, currentSleepTime, sleepTime)
           break
