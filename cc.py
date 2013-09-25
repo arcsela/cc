@@ -38,7 +38,7 @@ def login(in_account, in_password):
   print 'account: %s' % setAccountPassword(in_password)
 
 def login2(header, body):
-  setSession('INVALID')
+  #setSession('INVALID')
   response = apiLogin(header, body)
   setSession(response['login']['sid'])
   print 'account: %s' % setAccountPassword('1234qwer')
