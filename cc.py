@@ -562,6 +562,25 @@ def main():
     response = apiRequest('/gacha', queryString)
     if response['res'] == 0:
       print response
+      
+  elif sys.argv[1] == 'evdraw':
+    resPlayerStatus = getPlayerStatus()
+    eventPoint = 0
+    for item in resPlayerStatus['body'][7]['data']:
+      if item['item_id'] == 12:
+        eventPoint = item['cnt']
+        break
+    print 'event point: %s' % (eventPoint)
+    drawCnt = eventPoint / 200
+    drawCnt = 10 if drawCnt >= 10 else drawCnt
+    if drawCnt > 0:
+      queryString = {}
+      queryString.update({'t':3})
+      queryString.update({'c':drawCnt})
+      response = apiRequest('/gacha', queryString)
+      for card in response['present_card_list']:
+        print 'card id: %s' % (gacha.i2n(int(card['cid'])))
+    
 
   elif sys.argv[1] == 'test':
     response = apiRequest('/user/all_data')
