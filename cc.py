@@ -57,6 +57,13 @@ def setSession(in_sessionId):
   config.set('session', 'sessionId', in_sessionId)
   fp = open(configFile, 'wb')
   config.write(fp)
+  
+def loadBossFight():
+  cfgBossFight = config.get('bot', 'bossFight')
+  if int(cfgBossFight) == 0:
+    return False
+  else:
+    return True
 
 def loadFriend():
   return config.get('player', 'friendId')
@@ -435,15 +442,17 @@ def bot_mode():
       soulMax  = playerStatus['body'][4]['data']['powerMax']
       soulTime = (playerStatus['body'][4]['data']['pwrRefillTime'] - int(time.time())) / 60
       soulCur  = soulMax if soulTime < 0 else soulMax - soulTime / RECOVER_TIME_SOUL - 1
-      printBossList(bossList())
-      resBossList = bossList()
-      if soulCur > 0:
-        resBossInfo = bossInfo(resBossList, None, playerStatus['body'][4]['data']['uid'])
-        if resBossInfo is not None:
-          bossFight(resBossInfo, currentSleepTime, sleepTime)
-          break
-        elif staCur >= 4:
-          quest('220103')
+      if loadBossFight():
+        printBossList(bossList())
+        resBossList = bossList()
+        if soulCur > 0:
+          resBossInfo = bossInfo(resBossList, None, playerStatus['body'][4]['data']['uid'])
+          if resBossInfo is not None:
+            bossFight(resBossInfo, currentSleepTime, sleepTime)
+            break
+          elif staCur >= 4:
+            quest('220103')
+          
       print 'sleep: %s/%s' % (currentSleepTime, sleepTime)
       time.sleep(60)
       currentSleepTime += 1
