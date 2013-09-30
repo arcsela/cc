@@ -158,6 +158,9 @@ def getPlayerStatus():
 def printPlayerStatus(playerStatus = None):
   if playerStatus is None:
     playerStatus = getPlayerStatus()
+  playerGold = 0
+  playerFP = 0
+  playerRing = 0
   for item in playerStatus['body'][7]['data']:
     if item['item_id'] == 10:
       playerGold = item['cnt']
@@ -288,18 +291,18 @@ def quest(questIdList):
   if type(questIdList) is str:
     questIdList = [questIdList]
   questIdList.reverse()
-  statusInfo = getPlayerStatus()
+  playerStatus = getPlayerStatus()
   
   # manually input situation
   if len(questIdList) == 1:
     questId = questIdList.pop()      
-    questInfo  = parseMissionStatus(questId, statusInfo)
+    questInfo  = parseMissionStatus(questId, playerStatus)
     return __battleQuest__(questInfo)
   
   questInfo = None
   while len(questIdList) > 0:
     questId = questIdList.pop()      
-    questInfo  = parseMissionStatus(questId, statusInfo)
+    questInfo  = parseMissionStatus(questId, playerStatus)
     if questInfo is None:
       continue
     if not checkQuestClear(questInfo):
@@ -307,15 +310,29 @@ def quest(questIdList):
     else:
       print '%s - cleared' % (questId)
   questId = loadQuestFinal()
-  questInfo = parseMissionStatus(questId, statusInfo)
+  questInfo = parseMissionStatus(questId, playerStatus)
   if questInfo is not None:
     __battleQuest__(questInfo)
+  elif parseQuestSub(playerStatus) is not None:
+    subQuestInfo = parseQuestSub(playerStatus)
+    __battleQuest__(subQuestInfo)
   else:
     return questMain()
+  
+def parseQuestSub(playerStatus = None):
+  if playerStatus is None:
+    playerStatus = getPlayerStatus()
+  for dataGroup in playerStatus['body']:
+    if dataGroup['type'] == 6:
+      for quest in dataGroup['data']:
+        if quest['stepNow'] >= 0 and not quest.has_key('treasure_idx'):
+          return quest
+  return None
 
-def questMain():
-  statusInfo = getPlayerStatus()
-  mainQuestList  = parseMainQuestList(statusInfo)
+def questMain(playerStatus = None):
+  if playerStatus is None:
+    playerStatus = getPlayerStatus()
+  mainQuestList  = parseMainQuestList(playerStatus)
   mainQuestList.reverse()
   questInfo = mainQuestList[0]
   battleResponse = __battleQuest__(questInfo)
@@ -492,6 +509,10 @@ def main():
   elif sys.argv[1] == 'quest':
     questId = sys.argv[2]
     quest(questId)
+  elif sys.argv[1] == 'questSub':
+    playerStatus = getPlayerStatus()
+    questInfo = parseQuestSub(playerStatus)
+    __battleQuest__(questInfo)
   elif sys.argv[1] == 'questMain':
     questMain()
   elif sys.argv[1] == 'questWin':
