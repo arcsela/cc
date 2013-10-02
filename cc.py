@@ -179,9 +179,9 @@ def printPlayerStatus(playerStatus = None):
 #  print 'exp: %s/%s (Lv %s)' % (playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'], playerStatus['body'][4]['data']['lv'])
   print 'RANK%s, Exp: %s/%s' % (playerStatus['body'][4]['data']['lv'], playerStatus['body'][4]['data']['disp_exp'], playerStatus['body'][4]['data']['next_exp'])
   for form in playerStatus['body'][4]['data']['mainForm']:
-    printCardInfo(form,playerStatus)
+    print cardInfo(form,playerStatus)
   for form in playerStatus['body'][4]['data']['subForm']:
-    printCardInfo(form,playerStatus)
+    print cardInfo(form,playerStatus)
   print 'Stone: %s , Gold: %s , AC: %s, Ring: %s, ' % (playerStone, playerGold, playerFP, playerRing) + 'Card: %s/%s' % (len(playerStatus['body'][5]['data']), playerStatus['body'][4]['data']['cardMax']) 
   print 'AP: %s/%s (%s)' % (staCur, staMax, staTime % RECOVER_TIME_STA)
   print 'Soul: %s/%s (%s)' % (soulCur, soulMax, soulTime % RECOVER_TIME_SOUL)
@@ -193,18 +193,17 @@ def printPlayerInfo(playerStatus = None):
   print 'AID: %s,%s,%s' % (Aid[:3], Aid[3:6], Aid[6:])
   print 'FID: %s' % (playerStatus['body'][4]['data']['uid'])
 
-def printCardInfo(idx, playerStatus = None):
+def cardInfo(idx, playerStatus = None):
   if playerStatus is None:
     playerStatus = getPlayerStatus()
   for item in playerStatus['body'][5]['data']:
     if item['idx'] == int(idx):
       if item['type'] == 0:
-        print '%sS(%s) ' % ((item['maxlv'] - item['limit_break'] * 5) / 10 - 1, item['limit_break']) + 'Lv%2s, ' % item['lv'] + 'EXP: %5s/%5s, ' % (item['disp_exp'], item['next_exp']) + 'HP:%5s, ATK:%5s, ' % (item['hp'], item['atk']) + 'WP:%2s/%2s/%2s, ' % (item['weaponAttack'], item['weaponCritical'], item['weaponGuard']) + '%s' % gacha.i2n(int(item['id']))
-        return
+        return 'Lv: %2s/%2s, ' % (item['lv'],item['maxlv']) + 'EXP: %5s/%5s, ' % (item['disp_exp'], item['next_exp']) + 'HP:%5s, ATK:%5s, ' % (item['hp'], item['atk']) + 'WP:%2s/%2s/%2s, ' % (item['weaponAttack'], item['weaponCritical'], item['weaponGuard']) + '%s' % gacha.i2n(item['id'],item['type']) + '+%s' % item['limit_break']
+        
       else:
-        print item
-        return
-  #print 'No matching card'
+        return item
+
 
 def parseMissionStatus(questid, playerStatus = None):
   if playerStatus is None:
@@ -263,11 +262,7 @@ def printBattleResult(in_battleResult):
     if in_battleResult.has_key('earns'):
       print 'EXP: %s / GOLD: %s (bonus %s)' % (in_battleResult['earns']['exp'], in_battleResult['earns']['gold'], in_battleResult['earns']['bonus_gold'])
       for item in in_battleResult['earns']['treasure']:
-        if item['type'] == 'card':
-          #print 'Treasure: %s - %s x %s' % (item['type'], gacha.i2n(int(item['id'])), item['val'])
-          print 'Treasure: %s - %s x %s' % (item['type'], item['id'], item['val'])
-        else:
-          print 'Treasure: %s - %s x %s' % (item['type'], item['id'], item['val'])
+        print 'Treasure:  %s' %  gacha.i2n(item['id'], item['type'], item['val'])
     if in_battleResult.has_key('quest_reward'):
       print 'QUEST COMPLETED REWARD!!!'
       print in_battleResult['quest_reward']
@@ -474,17 +469,126 @@ def bot_mode():
       time.sleep(60)
       currentSleepTime += 1
 
-def printCard(playerStatus = None):
+def printCard(type,playerStatus = None):
   if playerStatus is None:
     playerStatus = getPlayerStatus()
   for item in playerStatus['body'][5]['data']:
-    if item['type'] == 0:
-      print '%sS(%s) ' % ((item['maxlv'] - item['limit_break'] * 5) / 10 - 1, item['limit_break']) + 'Lv%2s, ' % item['lv'] + 'EXP: %5s/%5s, ' % (item['disp_exp'], item['next_exp']) + 'HP:%5s, ATK:%5s, ' % (item['hp'], item['atk']) + 'WP:%2s/%2s/%2s, ' % (item['weaponAttack'], item['weaponCritical'], item['weaponGuard']) + 'No.%05d %s' % (int(item['id']), gacha.i2n(int(item['id'])))
-#      return
+    if type == -1:
+      print '[%s] ' % item['idx'] + 'No.%05d %s ' % (int(item['id']), gacha.i2n(item['id'],item['type']))
+    elif type == 0 and item['type'] == 0:
+      print '[%s] ' % item['idx'] + 'No.%05d ' % int(item['id']) + '%s' % cardInfo(item['idx'],playerStatus)
+    elif type == 1 and item['type'] == 1:
+      print '[%s] ' % item['idx'] + 'No.%05d %s ' % (int(item['id']), gacha.i2n(item['id'],item['type']))
+    elif type > 1 and item['type'] > 1:
+      print '[%s] ' % item['idx'] + 'No.%05d %s ' % (int(item['id']), gacha.i2n(item['id'],item['type']))
+
+def printPresentList(presentList = None):
+  if presentList is None:
+    presentList = getPresentList()
+  presentIdList = presentList['body'][0]['data']
+  for present in presentIdList:
+    #print '[%s]' % present['idx'] + ' %s - %s x %s' % (present['data']['type'], gacha.i2n(int(present['data']['id'])), present['data']['val'])
+    print '[%s]' % present['idx'] + ' %s ' % gacha.i2n(present['data']['id'],present['data']['type'],present['data']['val'])
+
+def getPresentList():
+  return apiRequest('/present/list')
+
+def sellCard( idx,playerStatus = None ):
+  #no playerStatus no check locked
+  queryString = {}
+  queryString.update({'c' : idx})
+  if playerStatus is None:
+    response = apiRequest('/card/sell', queryString)
+    if response['res'] == 0:
+      print '%s is selled.' % idx 
+    return
+  for item in playerStatus['body'][5]['data']:
+    if item['idx'] == int(idx):
+      if item.get('locked', False) == True:
+        print '%s is lock.' % idx 
+        return
+      else:
+        response = apiRequest('/card/sell', queryString)
+        if response['res'] == 0:
+          print '%s is selled.' % idx 
+        return
+  print 'no match idx(%s).' % idx
+
+def autoSellBox():
+  presentIdList = apiRequest('/present/list?')['body'][0]['data']
+  for present in presentIdList:
+    if( gacha.i2as(present['data']['id'],present['data']['type']) ):
+      print '\033[1;31m[%s]' % present['idx'] + ' %s \033[m' % gacha.i2n(present['data']['id'],present['data']['type'],present['data']['val'])
+      print 'sell after 2 seconds...'
+      time.sleep(2)
+      queryString = {}
+      queryString.update({'p' : present['idx']})
+      response = apiRequest('/present/recv', queryString)
+      sellCard(response['body'][0]['data'][0]['idx'])
     else:
-      print item
-#      return
-  #print 'No matching card'
+      print '\033[1;30m[%s]' % present['idx'] + ' %s \033[m' % gacha.i2n(present['data']['id'],present['data']['type'],present['data']['val'])
+    '''
+    if( present['data']['type'] == 'card' ):
+      queryString = {}
+      queryString.update({'p' : present['idx']})
+      response = apiRequest('/present/recv', queryString)
+      #print '[%s] ' % response['body'][0]['data'][0]['idx'] + 'No.%05d ' % int(response['body'][0]['data'][0]['id']) + '%s' % cardInfo(response['body'][0]['data'][0]['idx'])
+      star = getCardStar(response['body'][0]['data'][0]['idx'])
+      if star < 3:
+        print '\033[1;31m[%s]' % present['idx'] + ' %s \033[m' % gacha.i2n(present['data']['id'],present['data']['type'],present['data']['val'])
+        #print 'this card is %sS, to sell.' % star
+        sellCard(response['body'][0]['data'][0]['idx'])
+      else:
+        print '\033[1;33m[%s]' % present['idx'] + ' %s \033[m' % gacha.i2n(present['data']['id'],present['data']['type'],present['data']['val'])        
+        #print 'this card is %sS.' % star
+      
+    elif( present['data']['type'] == 'chara_rf'):
+      print '\033[1;31m[%s]' % present['idx'] + ' %s \033[m' % gacha.i2n(present['data']['id'],present['data']['type'],present['data']['val'])
+      star = (int(present['data']['id'])-90000)/5+1
+      if star < 2:
+        queryString = {}
+        queryString.update({'p' : present['idx']})
+        response = apiRequest('/present/recv', queryString)
+      #  print 'this card is %sS, to sell.' % star
+        sellCard(response['body'][0]['data'][0]['idx'])
+      #else:
+      #  print 'this card is %sS.' % star
+    else:
+      #print present['idx']
+      print '\033[1;30m[%s]' % present['idx'] + ' %s \033[m' % gacha.i2n(present['data']['id'],present['data']['type'],present['data']['val'])
+    #print present
+      '''
+def autoSellCard():
+  resPlayerStatus = getPlayerStatus()
+  for item in resPlayerStatus['body'][5]['data']:
+    if( gacha.i2as(item['id'],item['type']) ):
+      print '\033[1;31m[%s]' % item['idx'] + ' %s \033[m' % gacha.i2n(item['id'],item['type'])
+      print 'sell after 2 seconds...'
+      time.sleep(2)
+      sellCard(item['idx'], resPlayerStatus)
+    else:
+      print '\033[1;30m[%s]' % item['idx'] + ' %s \033[m' % gacha.i2n(item['id'],item['type'])
+
+    '''
+    if( item['type'] == 0 ):
+      star = getCardStar(item['idx'])
+      if star < 3:
+        print '\033[1;31m[%s]' % item['idx'] + ' %s \033[m' % gacha.i2n(item['id'],item['type'])
+        sellCard(item['idx'])
+      else:
+        print '\033[1;30m[%s]' % item['idx'] + ' %s \033[m' % gacha.i2n(item['id'],item['type'])
+        
+    elif( item['type'] == 3 ):
+      star = (int(item['id'])-90000)/5+1
+      if star < 2:
+        print '\033[1;31m[%s]' % item['idx'] + ' %s \033[m' % gacha.i2n(item['id'],item['type'])
+        sellCard(item['idx'])
+      else:
+        print '\033[1;30m[%s]' % item['idx'] + ' %s \033[m' % gacha.i2n(item['id'],item['type'])
+    else:
+      print '\033[1;30m[%s]' % item['idx'] + ' %s \033[m' % gacha.i2n(item['id'],item['type'])
+    '''
+
 
 def main():
   sys.path.append(os.getcwd())
@@ -575,15 +679,37 @@ def main():
     print 'account: %s' % setAccountPassword(password)
     
   elif sys.argv[1] == 'recv':
-    presentIdList = apiRequest('/present/list?')['body'][0]['data']
-    queryString = {}
-    for present in presentIdList:
-      queryString.update({'p' : present['idx']})
-      esponse = apiRequest('/present/recv', queryString)
-      print response
-      time.sleep(1)
-    print 'recv end'
-    
+    #print '%d' % len(sys.argv)
+    y = len(sys.argv) - 2
+    for x in range(0, y, 1):
+      idx = sys.argv[x+2]
+      queryString = {}
+      queryString.update({'p' : idx})
+      response = apiRequest('/present/recv', queryString)
+      if response['res'] == 0:
+        item = response['body'][0]['data']
+        print '[%s] ' % item[0]['idx'] + 'No.%05d ' % int(item[0]['id']) + '%s' % cardInfo(item[0]['idx']) 
+
+  elif sys.argv[1] == 'autosell':
+    try:
+      subCommand = sys.argv[2]
+      if subCommand == 'box':
+        autoSellBox()
+      elif subCommand == 'card':
+        autoSellCard()
+      else:
+        raise
+    except:
+      print('command for autosell: card, box')
+
+  elif sys.argv[1] == 'sell':
+    #print '%d' % len(sys.argv)
+    y = len(sys.argv) - 2
+    for x in range(0, y, 1):
+      idx = sys.argv[x+2]
+      resPlayerStatus = getPlayerStatus()
+      sellCard(idx,resPlayerStatus)
+
   elif sys.argv[1] == 'acdraw':
     num = sys.argv[2]
     queryString = {}
@@ -592,7 +718,32 @@ def main():
     response = apiRequest('/gacha', queryString)
     if response['res'] == 0:
       print response
-      
+ 
+  elif sys.argv[1] == 'card':
+    try:
+      subCommand = sys.argv[2]
+      if subCommand == 'rf':
+        printCard(2)
+      elif subCommand == 'wp':
+        printCard(1)
+      elif subCommand == 'ch':
+        printCard(0)
+      elif subCommand == 'all':
+        printCard(-1)
+      else:
+        raise
+    except:
+      print('command for card: ch, rf, wp, all')
+
+
+  elif sys.argv[1] == 'box':
+    printPresentList()
+    
+  elif sys.argv[1] == 'recovery_ap':
+    queryString = {}
+    queryString.update({'type' : 1})
+    response = apiRequest('/user/recover_ap', queryString)
+
   elif sys.argv[1] == 'evdraw':
     resPlayerStatus = getPlayerStatus()
     eventPoint = 0
@@ -613,19 +764,7 @@ def main():
         response = apiRequest('/gacha', queryString)
         for card in response['present_card_list']:
           print 'card id: %s' % (gacha.i2n(int(card['cid'])))
-    
-  elif sys.argv[1] == 'test':
-    response = apiRequest('/user/all_data')
-    print response #['body'][2]['data']
-    
-  elif sys.argv[1] == 'card':
-    printCard()
-    
-  elif sys.argv[1] == 'recovery_ap':
-    queryString = {}
-    queryString.update({'type' : 1})
-    response = apiRequest('/user/recover_ap', queryString)
-      
+           
   else:
     print 'command error - %s' % sys.argv[1]
 
