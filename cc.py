@@ -199,7 +199,7 @@ def cardInfo(idx, playerStatus = None):
   for item in playerStatus['body'][5]['data']:
     if item['idx'] == int(idx):
       if item['type'] == 0:
-        return 'Lv: %2s/%2s, ' % (item['lv'],item['maxlv']) + 'EXP: %5s/%5s, ' % (item['disp_exp'], item['next_exp']) + 'HP:%5s, ATK:%5s, ' % (item['hp'], item['atk']) + 'WP:%2s/%2s/%2s, ' % (item['weaponAttack'], item['weaponCritical'], item['weaponGuard']) + '%s' % gacha.i2n(item['id'],item['type']) + '+%s' % item['limit_break']
+        return 'Lv: %2s/%2s, ' % (item['lv'],item['maxlv']) + 'EXP: %5s/%5s, ' % (item['disp_exp'], item['next_exp']) + 'HP:%5s, ATK:%5s, ' % (item['hp'], item['atk']) + 'WP:%2s/%2s/%2s, ' % (item['weaponAttack'], item['weaponCritical'], item['weaponGuard']) + 'No.%05d ' % int(item['id']) + '%s' % gacha.i2n(item['id'],item['type']) + '+%s' % item['limit_break']
         
       else:
         return item
@@ -218,14 +218,17 @@ def parseMainQuestList(playerStatus = None):
     playerStatus = getPlayerStatus()
   return playerStatus['body'][1]['data']
 
-def printMissionList(typeid = None):
+def printMissionList(typeid = None, data = 3):
   playerStatus = getPlayerStatus()
-  for quest in playerStatus['body'][3]['data']:
+  for quest in playerStatus['body'][data]['data']:
     if not typeid or quest['type'] == int(typeid):
-      if quest.has_key('treasure_idx'):
-        print '%s - %s/4' % (quest['id'], len(quest['treasure_idx']))
+      if data == 3:
+        if quest.has_key('treasure_idx'):
+          print '%s - %s/4' % (quest['id'], len(quest['treasure_idx']))
+        else:
+          print '%s - 0/4' % (quest['id'])
       else:
-        print '%s - 0/4' % (quest['id'])
+        print '%s' % (quest['id'])
 
 def printMissionStatus(questid):
   missionStatus = parseMissionStatus(questid)
@@ -314,14 +317,18 @@ def quest(questIdList):
   else:
     return questMain()
   
-def parseQuestSub(playerStatus = None):
+def parseQuestSub(playerStatus = None,questid = None):
   if playerStatus is None:
     playerStatus = getPlayerStatus()
   for dataGroup in playerStatus['body']:
     if dataGroup['type'] == 6:
       for quest in dataGroup['data']:
-        if quest['stepNow'] >= 0 and not quest.has_key('treasure_idx'):
-          return quest
+        if questid is None:
+          if quest['stepNow'] >= 0 and not quest.has_key('treasure_idx'):
+            return quest
+        else:
+          if quest['id'] == int(questid):
+            return quest
   return None
 
 def questMain(playerStatus = None):
@@ -476,7 +483,7 @@ def printCard(type,playerStatus = None):
     if type == -1:
       print '[%s] ' % item['idx'] + 'No.%05d %s ' % (int(item['id']), gacha.i2n(item['id'],item['type']))
     elif type == 0 and item['type'] == 0:
-      print '[%s] ' % item['idx'] + 'No.%05d ' % int(item['id']) + '%s' % cardInfo(item['idx'],playerStatus)
+      print '[%s] ' % item['idx'] + '%s' % cardInfo(item['idx'],playerStatus)
     elif type == 1 and item['type'] == 1:
       print '[%s] ' % item['idx'] + 'No.%05d %s ' % (int(item['id']), gacha.i2n(item['id'],item['type']))
     elif type > 1 and item['type'] > 1:
@@ -610,13 +617,23 @@ def main():
       printMissionList(sys.argv[2])
     else:
       printMissionList()
+  elif sys.argv[1] == 'questSubList':
+    if len(sys.argv) == 3:
+      printMissionList(sys.argv[2],2)
+    else:
+      printMissionList(None,2)
   elif sys.argv[1] == 'quest':
     questId = sys.argv[2]
     quest(questId)
   elif sys.argv[1] == 'questSub':
     playerStatus = getPlayerStatus()
-    questInfo = parseQuestSub(playerStatus)
-    __battleQuest__(questInfo)
+    if len(sys.argv) == 3:
+      questId = sys.argv[2]
+      questInfo = parseQuestSub(playerStatus,questId)
+      __battleQuest__(questInfo)
+    else:
+      questInfo = parseQuestSub(playerStatus)
+      __battleQuest__(questInfo)
   elif sys.argv[1] == 'questMain':
     questMain()
   elif sys.argv[1] == 'questWin':
@@ -627,9 +644,7 @@ def main():
     questId = sys.argv[2]
     printMissionStatus(questId)
   elif sys.argv[1] == 'playerInfo':
-    #printPlayerInfo()
     printPlayerStatus()
-    
   elif sys.argv[1] == 'friend':
     try:
       subCommand = sys.argv[2]
@@ -679,7 +694,6 @@ def main():
     print 'account: %s' % setAccountPassword(password)
     
   elif sys.argv[1] == 'recv':
-    #print '%d' % len(sys.argv)
     y = len(sys.argv) - 2
     for x in range(0, y, 1):
       idx = sys.argv[x+2]
@@ -703,7 +717,6 @@ def main():
       print('command for autosell: card, box')
 
   elif sys.argv[1] == 'sell':
-    #print '%d' % len(sys.argv)
     y = len(sys.argv) - 2
     for x in range(0, y, 1):
       idx = sys.argv[x+2]
