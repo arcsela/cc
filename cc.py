@@ -78,7 +78,7 @@ def loadSleepTime():
   return int(config.get('bot', 'sleeptime'))
 
 def generateTimestamp():
-  return hex(int(time.time() * 1000)).lstrip('0x')
+  return hex(int(time.time() * 1000)).lstrip('0x').rstrip('L')
 
 def generateBattleTime():
   return str(random.uniform(2,5))[0:4]
@@ -595,6 +595,13 @@ def autoSellCard():
     else:
       print '\033[1;30m[%s]' % item['idx'] + ' %s \033[m' % gacha.i2n(item['id'],item['type'])
     '''
+def idxSearchlCard(idx,playerStatus = None):
+  if playerStatus is None:
+    playerStatus = getPlayerStatus()
+  for item in playerStatus['body'][5]['data']:
+    if item['idx'] == int(idx):
+      return item
+  return None
 
 
 def main():
@@ -748,7 +755,6 @@ def main():
     except:
       print('command for card: ch, rf, wp, all')
 
-
   elif sys.argv[1] == 'box':
     printPresentList()
     
@@ -777,7 +783,58 @@ def main():
         response = apiRequest('/gacha', queryString)
         for card in response['present_card_list']:
           print 'card id: %s' % (gacha.i2n(int(card['cid'])))
-           
+
+  elif sys.argv[1] == 'compose':
+    if len(sys.argv)-3 < 1:
+      print('compose <compose_idx> <consume_idx> ... <consume_idx>')
+      return
+    resPlayerStatus = getPlayerStatus()
+    oldGold = 0
+    for item in resPlayerStatus['body'][7]['data']:
+      if item['item_id'] == 10:
+        oldGold = item['cnt']
+    item = None
+    item = idxSearchlCard(sys.argv[2],resPlayerStatus)
+    if item is not None:
+      if item['type'] == 0:
+        string = sys.argv[2]
+      else:
+        print '%s is not character card, compose cancel.' % sys.argv[2]
+        return
+    else:
+      print '%s is not exist, compose cancel.' % sys.argv[2]
+      return
+    for x in range(0, len(sys.argv)-3, 1): 
+      item = None
+      item = idxSearchlCard(sys.argv[x+3],resPlayerStatus)
+      if item is not None:
+        if item['type'] == 1 or item['type'] == 2:
+          print '%s is weapon_ev/weapon_rf, compose cancel.' % sys.argv[x+3] 
+          return
+        elif item.get('locked', False) == True:
+          print '%s is locked, compose cancel.' % sys.argv[x+3] 
+          return
+        else:
+          cs = gacha.i2star(item['id'],item['type'])
+          print cs
+          if item['type'] == 0 and cs > 2:
+            print '%s is %sS character card, compose cancel.' % (sys.argv[x+3] ,cs)
+            return
+          else:  
+            string += '&mt=' + sys.argv[x+3]
+      else:
+        print '%s is not exist, compose cancel.' % sys.argv[x+3] 
+        return  
+    queryString = {}
+    queryString.update({'ba' : string})   
+    response = apiRequest('/card/compose', queryString)
+    #print response
+    print 'EXP: %s / GOLD: %s ' % (response['add_exp'],response['money']-oldGold)
+    print 'Lv: %2s/%2s, ' % (response['base_card']['lv'],response['base_card']['maxlv']) + 'EXP: %5s/%5s, ' % (response['base_card']['disp_exp'], response['base_card']['next_exp']) + 'HP:%5s, ATK:%5s, ' % (response['base_card']['hp'], response['base_card']['atk']) + 'WP:%2s/%2s/%2s, ' % (response['base_card']['weaponAttack'], response['base_card']['weaponCritical'], response['base_card']['weaponGuard']) + 'No.%05d ' % int(response['base_card']['id']) + '%s' % gacha.i2n(response['base_card']['id'],response['base_card']['type']) + '+%s' % response['base_card']['limit_break']
+        
+    
+    
+    
   else:
     print 'command error - %s' % sys.argv[1]
 
