@@ -794,7 +794,7 @@ def main():
       if item['item_id'] == 10:
         oldGold = item['cnt']
     item = None
-    item = idxSearchlCard(sys.argv[2],resPlayerStatus)
+    item = idxSearchCard(sys.argv[2],resPlayerStatus)
     if item is not None:
       if item['type'] == 0:
         string = sys.argv[2]
@@ -806,7 +806,7 @@ def main():
       return
     for x in range(0, len(sys.argv)-3, 1): 
       item = None
-      item = idxSearchlCard(sys.argv[x+3],resPlayerStatus)
+      item = idxSearchCard(sys.argv[x+3],resPlayerStatus)
       if item is not None:
         if item['type'] == 1 or item['type'] == 2:
           print '%s is weapon_ev/weapon_rf, compose cancel.' % sys.argv[x+3] 
@@ -816,7 +816,6 @@ def main():
           return
         else:
           cs = gacha.i2star(item['id'],item['type'])
-          print cs
           if item['type'] == 0 and cs > 2:
             print '%s is %sS character card, compose cancel.' % (sys.argv[x+3] ,cs)
             return
@@ -829,7 +828,10 @@ def main():
     queryString.update({'ba' : string})   
     response = apiRequest('/card/compose', queryString)
     #print response
-    print 'EXP: %s / GOLD: %s ' % (response['add_exp'],response['money']-oldGold)
+    bonus = 0
+    if response.get('success', False) == True:
+      bonus = response['add_exp']
+    print 'EXP: %s (bonus %s) / GOLD: %s ' % (response['add_exp'],bonus,response['money']-oldGold)
     print 'Lv: %2s/%2s, ' % (response['base_card']['lv'],response['base_card']['maxlv']) + 'EXP: %5s/%5s, ' % (response['base_card']['disp_exp'], response['base_card']['next_exp']) + 'HP:%5s, ATK:%5s, ' % (response['base_card']['hp'], response['base_card']['atk']) + 'WP:%2s/%2s/%2s, ' % (response['base_card']['weaponAttack'], response['base_card']['weaponCritical'], response['base_card']['weaponGuard']) + 'No.%05d ' % int(response['base_card']['id']) + '%s' % gacha.i2n(response['base_card']['id'],response['base_card']['type']) + '+%s' % response['base_card']['limit_break']
         
     
