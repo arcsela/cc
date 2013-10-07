@@ -204,6 +204,8 @@ def cardInfo(idx, playerStatus = None):
       else:
         return item
 
+def printCharacterInfo(characterInfo):
+  return 'Lv: %2s/%2s, ' % (characterInfo['lv'],characterInfo['maxlv']) + 'EXP: %5s/%5s, ' % (characterInfo['disp_exp'], characterInfo['next_exp']) + 'HP:%5s, ATK:%5s, ' % (characterInfo['hp'], characterInfo['atk']) + 'WP:%2s/%2s/%2s, ' % (characterInfo['weaponAttack'], characterInfo['weaponCritical'], characterInfo['weaponGuard']) + 'No.%05d ' % int(characterInfo['id']) + '%s' % gacha.i2n(characterInfo['id'],characterInfo['type']) + '+%s' % characterInfo['limit_break']
 
 def parseMissionStatus(questid, playerStatus = None):
   if playerStatus is None:
@@ -358,14 +360,14 @@ def getFriendList():
 
 def printFriendList(friendList):
   for friend in friendList:
-    print "%s - [%2d] %s" % (friend['uid'], friend['lv'], friend['name'].encode("utf-8"))
+    print "%8s - RANK%2d %-8s \t | " % (friend['uid'], friend['lv'], friend['name'].encode("utf-8")) + '%s' % printCharacterInfo(friend['card'])
     
 def friendAccept(uid):
   queryString = {}
   queryString.update({'fid': uid})
   resFriend = apiRequest('/friend/accept', queryString)
   friendInfo = resFriend['body'][0]['data']['list'][0]
-  print "%s - [%2d] %s" % (friend['uid'], friend['lv'], friend['name'].encode("utf-8"))
+  print "%s - [%2d] %s" % (friendInfo['uid'], friendInfo['lv'], friendInfo['name'].encode("utf-8"))
   
 def friendRequest(uid):
   queryString = {}
@@ -565,6 +567,7 @@ def autoSellBox():
       print '\033[1;30m[%s]' % present['idx'] + ' %s \033[m' % gacha.i2n(present['data']['id'],present['data']['type'],present['data']['val'])
     #print present
       '''
+      
 def autoSellCard():
   resPlayerStatus = getPlayerStatus()
   for item in resPlayerStatus['body'][5]['data']:
@@ -595,7 +598,7 @@ def autoSellCard():
     else:
       print '\033[1;30m[%s]' % item['idx'] + ' %s \033[m' % gacha.i2n(item['id'],item['type'])
     '''
-def idxSearchlCard(idx,playerStatus = None):
+def idxSearchCard(idx,playerStatus = None):
   if playerStatus is None:
     playerStatus = getPlayerStatus()
   for item in playerStatus['body'][5]['data']:
@@ -701,15 +704,44 @@ def main():
     print 'account: %s' % setAccountPassword(password)
     
   elif sys.argv[1] == 'recv':
-    y = len(sys.argv) - 2
-    for x in range(0, y, 1):
-      idx = sys.argv[x+2]
-      queryString = {}
-      queryString.update({'p' : idx})
-      response = apiRequest('/present/recv', queryString)
-      if response['res'] == 0:
-        item = response['body'][0]['data']
-        print '[%s] ' % item[0]['idx'] + 'No.%05d ' % int(item[0]['id']) + '%s' % cardInfo(item[0]['idx']) 
+    if sys.argv[2] == 'all':
+      presentList = getPresentList()
+      presentIdList = presentList['body'][0]['data']
+      for present in presentIdList:
+        queryString = {}
+        queryString.update({'p' : present['idx']})
+        response = apiRequest('/present/recv', queryString)
+        if response['res'] == 0:
+          item = response['body'][0]['data']
+          #print '[%s] ' % item[0]['idx'] + 'No.%05d ' % int(item[0]['id']) + '%s' % cardInfo(item[0]['idx'])
+          print '[%s] ' % item[0]['idx'] + 'No.%05d %s ' % (int(item[0]['id']), gacha.i2n(item[0]['id'],item[0]['type']))
+        else:
+          break
+    elif sys.argv[2] == 'rf':
+      presentList = getPresentList()
+      presentIdList = presentList['body'][0]['data']
+      for present in presentIdList:
+        #print present
+        if gacha.i2type(present['data']['id']) == 3:
+          queryString = {}
+          queryString.update({'p' : present['idx']})
+          response = apiRequest('/present/recv', queryString)
+          if response['res'] == 0:
+            item = response['body'][0]['data']
+            #print '[%s] ' % item[0]['idx'] + 'No.%05d ' % int(item[0]['id']) + '%s' % cardInfo(item[0]['idx'])
+            print '[%s] ' % item[0]['idx'] + 'No.%05d %s ' % (int(item[0]['id']), gacha.i2n(item[0]['id'],item[0]['type']))
+          else:
+            break
+    else:
+      y = len(sys.argv) - 2
+      for x in range(0, y, 1):
+        idx = sys.argv[x+2]
+        queryString = {}
+        queryString.update({'p' : idx})
+        response = apiRequest('/present/recv', queryString)
+        if response['res'] == 0:
+          item = response['body'][0]['data']
+          print '[%s] ' % item[0]['idx'] + 'No.%05d ' % int(item[0]['id']) + '%s' % cardInfo(item[0]['idx']) 
 
   elif sys.argv[1] == 'autosell':
     try:
@@ -732,12 +764,18 @@ def main():
 
   elif sys.argv[1] == 'acdraw':
     num = sys.argv[2]
-    queryString = {}
-    queryString.update({'t' : 0})
-    queryString.update({'c' : num})
-    response = apiRequest('/gacha', queryString)
-    if response['res'] == 0:
-      print response
+    for x in range(int(num), 0, -10):
+      queryString = {}
+      queryString.update({'t' : 0})
+      if x > 10:
+        queryString.update({'c' : 10})
+      else:
+        queryString.update({'c' : x})
+      #print queryString
+      response = apiRequest('/gacha', queryString)
+      if response['res'] == 0:
+        print response
+        break
  
   elif sys.argv[1] == 'card':
     try:
@@ -785,9 +823,13 @@ def main():
           print 'card id: %s' % (gacha.i2n(int(card['cid'])))
 
   elif sys.argv[1] == 'compose':
-    if len(sys.argv)-3 < 1:
-      print('compose <compose_idx> <consume_idx> ... <consume_idx>')
+    if len(sys.argv)-2 < 1:
+      print('command for compose:')
+      print(' <compose_idx>')
+      print(' <compose_idx> <consume_idx> <consume_idx> ...')
       return
+    string = None
+    consume = 0 
     resPlayerStatus = getPlayerStatus()
     oldGold = 0
     for item in resPlayerStatus['body'][7]['data']:
@@ -804,39 +846,58 @@ def main():
     else:
       print '%s is not exist, compose cancel.' % sys.argv[2]
       return
-    for x in range(0, len(sys.argv)-3, 1): 
-      item = None
-      item = idxSearchCard(sys.argv[x+3],resPlayerStatus)
-      if item is not None:
-        if item['type'] == 1 or item['type'] == 2:
-          print '%s is weapon_ev/weapon_rf, compose cancel.' % sys.argv[x+3] 
-          return
-        elif item.get('locked', False) == True:
-          print '%s is locked, compose cancel.' % sys.argv[x+3] 
-          return
-        else:
-          cs = gacha.i2star(item['id'],item['type'])
-          if item['type'] == 0 and cs > 2:
-            print '%s is %sS character card, compose cancel.' % (sys.argv[x+3] ,cs)
+    
+    if len(sys.argv)-3 > 0:
+      for x in range(0, len(sys.argv)-3, 1): 
+        item = None
+        item = idxSearchCard(sys.argv[x+3],resPlayerStatus)
+        if item is not None:
+          if item['type'] == 1 or item['type'] == 2:
+            print '%s is weapon_ev/weapon_rf, compose cancel.' % sys.argv[x+3] 
             return
-          else:  
-            string += '&mt=' + sys.argv[x+3]
-      else:
-        print '%s is not exist, compose cancel.' % sys.argv[x+3] 
-        return  
+          elif item.get('locked', False) == True:
+            print '%s is locked, compose cancel.' % sys.argv[x+3] 
+            return
+          else:
+            cs = gacha.i2star(item['id'])
+            if item['type'] == 0 and cs > 2:
+              if cs == 99:
+                print '%s is unknown character card, compose cancel.' % (sys.argv[x+3] ,cs)
+              else:
+                print '%s is %sS character card, compose cancel.' % (sys.argv[x+3] ,cs)
+              return
+            else:  
+              string += '&mt=' + sys.argv[x+3]
+              if consume < 10:
+                consume = consume + 1
+              else:
+                break
+        else:
+          print '%s is not exist, compose cancel.' % sys.argv[x+3] 
+          return
+
+    else:
+      for item in resPlayerStatus['body'][5]['data']:
+        if item.get('locked', False) != True and gacha.i2star(item['id']) < 3 and ( item['type'] == 0 or item['type'] == 3 ):
+          string += '&mt=' + str(item['idx'])
+          print gacha.i2n(item['id'],item['type'])
+          if consume < 10:
+            consume = consume + 1
+          else:
+            break
+    
+    if consume == 0:
+      print 'no consume card, compose cancel.'
+      return      
     queryString = {}
-    queryString.update({'ba' : string})   
+    queryString.update({'ba' : string})
     response = apiRequest('/card/compose', queryString)
-    #print response
     bonus = 0
     if response.get('success', False) == True:
       bonus = response['add_exp']
-    print 'EXP: %s (bonus %s) / GOLD: %s ' % (response['add_exp'],bonus,response['money']-oldGold)
-    print 'Lv: %2s/%2s, ' % (response['base_card']['lv'],response['base_card']['maxlv']) + 'EXP: %5s/%5s, ' % (response['base_card']['disp_exp'], response['base_card']['next_exp']) + 'HP:%5s, ATK:%5s, ' % (response['base_card']['hp'], response['base_card']['atk']) + 'WP:%2s/%2s/%2s, ' % (response['base_card']['weaponAttack'], response['base_card']['weaponCritical'], response['base_card']['weaponGuard']) + 'No.%05d ' % int(response['base_card']['id']) + '%s' % gacha.i2n(response['base_card']['id'],response['base_card']['type']) + '+%s' % response['base_card']['limit_break']
-        
-    
-    
-    
+    print 'EXP: %s (bonus %s) / GOLD: %s ' % (response['add_exp']+bonus,bonus,response['money']-oldGold)
+    print 'Lv: %2s/%2s, ' % (response['base_card']['lv'],response['base_card']['maxlv']) + 'EXP: %5s/%5s, ' % (response['base_card']['disp_exp']+bonus, response['base_card']['next_exp']) + 'HP:%5s, ATK:%5s, ' % (response['base_card']['hp'], response['base_card']['atk']) + 'WP:%2s/%2s/%2s, ' % (response['base_card']['weaponAttack'], response['base_card']['weaponCritical'], response['base_card']['weaponGuard']) + 'No.%05d ' % int(response['base_card']['id']) + '%s' % gacha.i2n(response['base_card']['id'],response['base_card']['type']) + '+%s' % response['base_card']['limit_break']
+
   else:
     print 'command error - %s' % sys.argv[1]
 
